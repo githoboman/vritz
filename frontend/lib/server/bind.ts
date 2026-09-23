@@ -3,29 +3,20 @@
 
   The server issues a single-use nonce; the visitor signs a domain-separated message
   (chain, registry, asset, account, nonce, expiry) with the wallet that owns the
-  account being onboarded. Verification is BLOCKING: no claims are issued and no
-  credential is attested unless the signature verifies for the exact account, the
-  nonce is known, unexpired, and unconsumed.
+  account being onboarded. Verification is BLOCKING.
 
-  Store is in-memory (single Railway replica — same limitation as guards.ts).
-
-  Casper signed-message format: the wallet signs the UTF-8 bytes of
-  `Casper Message:\n${message}`. ed25519 (tag 01) signs those bytes directly;
-  secp256k1 (tag 02) signs the sha256 digest (casper-js-sdk convention).
+  Store is in-memory (single Railway replica).
 */
 
 import "server-only";
 import { randomBytes } from "node:crypto";
-import { ed25519 } from "@noble/curves/ed25519";
-import { secp256k1 } from "@noble/curves/secp256k1";
-import { sha256 } from "@noble/hashes/sha256";
-import { blake2b } from "@noble/hashes/blake2b";
+import { verifyMessage } from "ethers";
 
 const BIND_TTL_MS = 10 * 60_000;
 const MAX_PENDING = 5_000;
 
-const CHAIN = process.env.CASPER_CHAIN ?? "casper-test";
-const REGISTRY = process.env.REGISTRY_PKG ?? "hash-74148da7b68ce51e4dfa822af7106daaea7140862106a7b675057caf9ee404ce";
+const CHAIN = process.env.NEXT_PUBLIC_BOT_CHAIN_ID ?? "968";
+const REGISTRY = process.env.REGISTRY_PKG ?? "0x0000000000000000000000000000000000000000";
 const ASSET = process.env.ASSET_ID ?? "Vritz-bond-001";
 
 type BindRecord = {
@@ -64,64 +55,33 @@ export function issueBindNonce(account: string): { nonce: string; message: strin
   return { nonce, message: bindMessage(account, nonce, expiresAtMs), expiresAtMs };
 }
 
-/** Casper account hash for a tagged public key hex (01 ed25519 / 02 secp256k1). */
-export function publicKeyToAccountHash(publicKeyHex: string): string {
-  const tag = publicKeyHex.slice(0, 2).toLowerCase();
-  const algo = tag === "01" ? "ed25519" : "secp256k1";
-  const pub = Buffer.from(publicKeyHex.slice(2), "hex");
-  const input = Buffer.concat([Buffer.from(algo, "utf8"), Buffer.from([0]), pub]);
-  return Buffer.from(blake2b(input, { dkLen: 32 })).toString("hex");
-}
-
 export type BindFailure =
   | "missing-fields"
   | "unknown-nonce"
   | "expired"
   | "replayed"
   | "account-mismatch"
-  | "key-does-not-own-account"
   | "bad-signature";
 
 export type BindVerification = { ok: true } | { ok: false; reason: BindFailure };
 
-function verifySignature(publicKeyHex: string, message: string, signatureHex: string): boolean {
-  const tag = publicKeyHex.slice(0, 2).toLowerCase();
-  let sig = signatureHex.replace(/^0x/, "").toLowerCase();
-  if (sig.length === 130) sig = sig.slice(2); // strip a leading algorithm tag
-  const prefixed = new TextEncoder().encode(`Casper Message:\n${message}`);
-  const pub = Buffer.from(publicKeyHex.slice(2), "hex");
-  try {
-    if (tag === "01") {
-      if (pub.length !== 32 || sig.length !== 128) return false;
-      return ed25519.verify(Buffer.from(sig, "hex"), prefixed, pub);
-    }
-    if (tag === "02") {
-      if (pub.length !== 33 || sig.length !== 128) return false;
-      return secp256k1.verify(Buffer.from(sig, "hex"), sha256(prefixed), pub);
-    }
-    return false;
-  } catch {
-    return false;
-  }
-}
-
 /**
  * BLOCKING verification that the caller controls `account`. Checks: nonce exists,
- * unexpired, unconsumed, issued for this account; the public key hashes to this
- * account; the signature verifies over the exact issued message.
+ * unexpired, unconsumed, issued for this account; the signature verifies over the exact issued message
+ * and recovers to the `account` address.
  */
 export function verifyBindStrict(args: {
   account: unknown;
-  publicKey: unknown;
+  publicKey?: unknown; // unused in EVM but kept for API compatibility
   nonce: unknown;
   signature: unknown;
   consume: boolean;
 }): BindVerification {
-  const { account, publicKey, nonce, signature } = args;
+  const { account, nonce, signature } = args;
   if (
-    typeof account !== "string" || typeof publicKey !== "string" ||
+    typeof account !== "string" ||
     typeof nonce !== "string" || typeof signature !== "string" ||
-    !account || !publicKey || !nonce || !signature
+    !account || !nonce || !signature
   ) {
     return { ok: false, reason: "missing-fields" };
   }
@@ -129,12 +89,19 @@ export function verifyBindStrict(args: {
   if (!rec) return { ok: false, reason: "unknown-nonce" };
   if (rec.expiresAtMs < Date.now()) return { ok: false, reason: "expired" };
   if (rec.consumed) return { ok: false, reason: "replayed" };
-  if (rec.account !== account.toLowerCase()) return { ok: false, reason: "account-mismatch" };
-  if (publicKeyToAccountHash(publicKey) !== account.toLowerCase()) {
-    return { ok: false, reason: "key-does-not-own-account" };
-  }
+  if (rec.account.toLowerCase() !== account.toLowerCase()) return { ok: false, reason: "account-mismatch" };
+  
   const message = bindMessage(rec.account, rec.nonce, rec.expiresAtMs);
-  if (!verifySignature(publicKey, message, signature)) return { ok: false, reason: "bad-signature" };
+  
+  try {
+    const recovered = verifyMessage(message, signature);
+    if (recovered.toLowerCase() !== account.toLowerCase()) {
+      return { ok: false, reason: "bad-signature" };
+    }
+  } catch (e) {
+    return { ok: false, reason: "bad-signature" };
+  }
+  
   if (args.consume) rec.consumed = true;
   return { ok: true };
 }

@@ -7,7 +7,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Docs",
   description:
-    "How Vritz works: privacy-preserving, ERC-3643-style compliance for tokenized RWA on Casper — verified off-chain, committed on-chain, enforced at every transfer.",
+    "How Vritz works: privacy-preserving compliance for tokenized RWA on BOT Chain — verified off-chain, committed on-chain, enforced at every transfer.",
 };
 
 export default function DocsIntro() {
@@ -15,20 +15,16 @@ export default function DocsIntro() {
     <DocArticle
       slug="intro"
       title="How Vritz works"
-      description="Privacy-preserving, ERC-3643-style compliance for tokenized real-world assets on Casper."
+      description="Privacy-preserving compliance for tokenized real-world assets on BOT Chain."
     >
       <p>
         Every holder provably eligible, re-screened against live data, and blocked on-chain the
         moment they aren&apos;t — with zero investor PII on screen. Tokenizing an asset is easy;
         keeping it compliant for its whole life is the blocker. Vritz solves it.
       </p>
-      <p>
         It speaks the institutional security-token model the industry already trusts:{" "}
-        <strong>identity, claims, compliance rules, transfer restrictions</strong> — the ERC-3643 /
-        T-REX model. Casper has joined the <strong>ERC-3643 Association</strong>, the standards body
-        for compliant RWA tokenization; Vritz brings that model to Casper&apos;s native account and
-        weighted-multisig model, on the recommended Casper stack — <Mono>Odra</Mono>,{" "}
-        <Mono>CSPR.click</Mono>, <Mono>CSPR.cloud</Mono>.
+        <strong>identity, claims, compliance rules, transfer restrictions</strong>. Vritz brings 
+        that model to BOT Chain&apos;s native ecosystem, operating on standard EVM components and Web3 standards.
       </p>
       <Callout title="Read next">
         These pages walk the whole system — the problem, how onboarding, gating and disclosure work,

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/app-shell";
-import { CsprClickProvider } from "@/lib/csprclick";
+import { EVMProvider } from "@/lib/evm-provider";
 
 export const metadata: Metadata = {
   title: "App",
@@ -13,8 +13,8 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <CsprClickProvider>
+    <EVMProvider>
       <AppShell>{children}</AppShell>
-    </CsprClickProvider>
+    </EVMProvider>
   );
 }

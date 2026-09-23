@@ -9,7 +9,7 @@ import { loadSampleInput } from "@/lib/prove";
 import type { TrailEvent } from "@/lib/cspr-cloud";
 
 const COMMITMENT_SHORT = `${REGULATED_HOLDER.commitment.slice(0, 8)}…${REGULATED_HOLDER.commitment.slice(-4)}`;
-const HOLDER_HEX = REGULATED_HOLDER.holder.replace(/^account-hash-/, "");
+const HOLDER_HEX = REGULATED_HOLDER.holder;
 const HOLDER_SHORT = `0x${HOLDER_HEX.slice(0, 4)}…${HOLDER_HEX.slice(-4)}`;
 
 type Verdict = "idle" | "verifying" | "valid" | "invalid";

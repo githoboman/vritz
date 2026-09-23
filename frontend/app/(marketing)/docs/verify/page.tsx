@@ -11,14 +11,14 @@ export default function DocsVerify() {
     <DocArticle
       slug="verify"
       title="Verify it yourself"
-      description="This isn't a slideshow. The contracts are live on Casper testnet; every claim is backed by a confirmed on-chain transaction."
+      description="This isn't a slideshow. The contracts are live on BOT Chain testnet; every claim is backed by a confirmed on-chain transaction."
     >
-      <p>Click through — each lands on the real, confirmed deploy on testnet.cspr.live:</p>
+      <p>Click through — each lands on the real, confirmed deploy on scan.botchain.ai:</p>
       <div className="space-y-3">
         <Proof
           href={deployTxUrl(DOCS_TX.kicker)}
           label="A sanctioned sender's transfer REVERTS"
-          detail="The kicker — the recipient-aware CEP-78 filter blocks it on-chain (filter error 159)."
+          detail="The kicker — the recipient-aware EVM filter blocks it on-chain (filter error 159)."
         />
         <Proof
           href={deployTxUrl(DOCS_TX.recipientDeny)}
@@ -32,14 +32,14 @@ export default function DocsVerify() {
         />
         <Proof
           href={deployTxUrl(DOCS_TX.fraudSlash)}
-          label="A fraudulent attestation is slashed — 110 CSPR to the treasury"
-          detail="resolve re-verifies the credential's own proof on-chain (Groth16 → false), revokes it for fraud, slashes the signers' bonds (500 CSPR), pays the challenger 640, and transfers the 110 remainder to the treasury account (spendable — a treasury transfer, not a burn)."
+          label="A fraudulent attestation is slashed — 110 BOT to the treasury"
+          detail="resolve re-verifies the credential's own proof on-chain (Groth16 → false), revokes it for fraud, slashes the signers' bonds (500 BOT), pays the challenger 640, and transfers the 110 remainder to the treasury account (spendable — a treasury transfer, not a burn)."
         />
       </div>
       <p className="text-sm text-ink-subtle">
         The live registry, NFT contract, and the regulated holder are all on{" "}
         <Link href={deployUrl(CONTRACTS.registry.pkg)} target="_blank" rel="noreferrer" className="text-brand underline-offset-2 hover:underline">
-          testnet.cspr.live
+          scan.botchain.ai
         </Link>
         . Run the commitment match yourself in the{" "}
         <Link href="/app/regulator" className="text-brand underline-offset-2 hover:underline">

@@ -12,8 +12,8 @@ export const runtime = "nodejs";
 
 function accountHex(s: unknown): string | null {
   if (typeof s !== "string") return null;
-  const hex = s.replace(/^account-hash-/, "").toLowerCase();
-  return /^[0-9a-f]{64}$/.test(hex) ? hex : null;
+  const hex = s.toLowerCase();
+  return /^0x[0-9a-f]{40}$/.test(hex) ? hex : null;
 }
 
 export async function POST(req: Request): Promise<Response> {

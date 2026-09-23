@@ -6,15 +6,15 @@ import { Wordmark } from "@/components/wordmark";
 import { Button, ButtonLink, Container } from "@/components/ui";
 import { APP_SURFACES } from "@/lib/site";
 import { cn } from "@/lib/cn";
-import { useCsprClick } from "@/lib/csprclick";
+import { useEVM } from "@/lib/evm-provider";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { configured, ready, account, connect, disconnect } = useCsprClick();
+  const { ready, account, connect, disconnect } = useEVM();
   const pathname = usePathname();
 
-  const connected = Boolean(account?.public_key);
-  const address = account?.public_key
-    ? `${account.public_key.slice(0, 6)}…${account.public_key.slice(-4)}`
+  const connected = Boolean(account?.address);
+  const address = account?.address
+    ? `${account.address.slice(0, 6)}…${account.address.slice(-4)}`
     : undefined;
 
   if (!connected) {
@@ -33,21 +33,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
             <div className="px-8 py-7">
               <p className="text-sm leading-relaxed text-ink-muted">
-                Vritz&apos;s surfaces are wallet-gated. Connect your Casper wallet to continue — your
+                Vritz&apos;s surfaces are wallet-gated. Connect your EVM wallet to continue — your
                 connected account becomes your holder identity. No documents or PII are ever requested.
               </p>
               <Button
                 className="mt-6 w-full"
                 size="lg"
                 onClick={connect}
-                disabled={!configured || !ready}
+                disabled={!ready}
               >
-                {configured ? (ready ? "Connect with CSPR.click" : "Loading wallet…") : "Wallet unavailable"}
+                {ready ? "Connect Web3 Wallet" : "Loading wallet…"}
               </Button>
               <p className="mt-4 text-xs text-ink-subtle">
-                {configured
-                  ? "Casper Wallet · Ledger · MetaMask Snap · WalletConnect"
-                  : "Wallet connect not configured (NEXT_PUBLIC_CSPR_CLICK_APP_ID)."}
+                MetaMask · WalletConnect · Compatible EVM Wallet
               </p>
             </div>
           </div>

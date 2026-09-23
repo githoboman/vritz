@@ -8,7 +8,7 @@ import { cn } from "@/lib/cn";
 import { generateEligibilityProof, commitmentToHex, type ProofResult } from "@/lib/prove";
 import { deriveIdentity, identityDerivationMessage } from "@/lib/identity";
 import { deployTxUrl } from "@/lib/chain";
-import { useCsprClick, publicKeyToAccountHash } from "@/lib/csprclick";
+import { useEVM } from "@/lib/evm-provider";
 import { ASSET_ID } from "@/lib/chain";
 
 type OnboardResult = {
@@ -20,16 +20,14 @@ type OnboardResult = {
 };
 
 export function InvestorProving() {
-  const { account, signMessage } = useCsprClick();
+  const { account, signMessage } = useEVM();
   const [step, setStep] = useState(0);
   const [proving, setProving] = useState(false);
   const [proof, setProof] = useState<ProofResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [linkedEth, setLinkedEth] = useState("");
   const [onboard, setOnboard] = useState<OnboardResult | null>(null);
-  // the CONNECTED wallet is the holder; its account hash binds the credential.
-  const walletPublicKey = account?.public_key ?? null;
-  const walletAccount = walletPublicKey ? publicKeyToAccountHash(walletPublicKey) : null;
+  // the CONNECTED wallet is the holder; its address binds the credential.
+  const walletAccount = account?.address ?? null;
   const total = PROVING_STEPS.length;
   const done = step >= total - 1;
   const onProveStep = PROVING_STEPS[step]?.key === "prove";
@@ -43,8 +41,8 @@ export function InvestorProving() {
   // 5. server verifies proof + public-input binding + sanctions screen, then attests
   //    with 2 server-held demo keys (single trust domain — labeled honestly)
   async function runProof(): Promise<void> {
-    if (!walletAccount || !walletPublicKey) {
-      setError("Connect your Casper wallet to onboard.");
+    if (!walletAccount) {
+      setError("Connect your EVM wallet to onboard.");
       return;
     }
     setProving(true);
@@ -54,11 +52,11 @@ export function InvestorProving() {
       const account = walletAccount;
 
       // (1) derive the wallet-held identity secret — the signature never leaves here.
-      const idSig = await signMessage(identityDerivationMessage(account, ASSET_ID), walletPublicKey);
-      if (!idSig || idSig.cancelled || !idSig.signature) {
+      const idSigStr = await signMessage(identityDerivationMessage(account, ASSET_ID));
+      if (!idSigStr) {
         throw new Error("identity signature required — it derives your private identity secret");
       }
-      const identity = await deriveIdentity(idSig.signature);
+      const identity = await deriveIdentity(idSigStr);
 
       // (2) prove control of the account: sign the server's single-use bind nonce.
       const bRes = await fetch("/api/bind", {
@@ -68,8 +66,8 @@ export function InvestorProving() {
       });
       const bind = (await bRes.json()) as { nonce?: string; message?: string; error?: string };
       if (!bind.nonce || !bind.message) throw new Error(bind.error ?? "bind nonce failed");
-      const bindSig = await signMessage(bind.message, walletPublicKey);
-      if (!bindSig || bindSig.cancelled || !bindSig.signature) {
+      const bindSigStr = await signMessage(bind.message);
+      if (!bindSigStr) {
         throw new Error("bind signature required — onboarding is blocked without proof of wallet control");
       }
 
@@ -79,9 +77,8 @@ export function InvestorProving() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           account,
-          publicKey: walletPublicKey,
           nonce: bind.nonce,
-          signature: bindSig.signature,
+          signature: bindSigStr,
           idCommit: identity.idCommit,
         }),
       });
@@ -104,12 +101,10 @@ export function InvestorProving() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           account,
-          publicKey: walletPublicKey,
           nonce: bind.nonce,
-          signature: bindSig.signature,
+          signature: bindSigStr,
           proof: result.proof,
           publicSignals: result.publicSignals,
-          linkedEthAddress: linkedEth.trim() || undefined,
         }),
       });
       const ob = (await oRes.json()) as {
@@ -199,24 +194,6 @@ export function InvestorProving() {
             <span aria-hidden>🔒</span>
             Your identity secret and witness stay in this browser — only the proof is sent.
           </div>
-
-          <label className="mt-4 block">
-            <span className="mb-1.5 block text-xs font-medium uppercase tracking-[0.08em] text-ink-subtle">
-              Linked ETH address (optional)
-            </span>
-            <input
-              type="text"
-              value={linkedEth}
-              onChange={(e) => setLinkedEth(e.target.value)}
-              placeholder="0x… — screened against the live OFAC SDN ETH list"
-              spellCheck={false}
-              className="w-full rounded-md border border-border-strong bg-surface px-3 py-2 text-xs font-mono text-ink"
-            />
-            <span className="mt-1 block text-[11px] leading-relaxed text-ink-subtle">
-              The live OFAC list holds ETH addresses, so only a linked ETH address can match it.
-              Casper-account matching uses a labeled demo denylist (illustrative).
-            </span>
-          </label>
 
           {proof && (
             <div className="mt-5 space-y-2 rounded-lg border border-active/30 bg-active-subtle p-4 text-xs">

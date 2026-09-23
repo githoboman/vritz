@@ -167,7 +167,7 @@ export default async function IssuerDashboard() {
 }
 
 function shortCommit(c: string): string {
-  const hex = c.startsWith("account-hash-") ? c.replace("account-hash-", "0x") : "0x" + c.replace(/^0x/, "");
+  const hex = c.startsWith("0x") ? c : "0x" + c;
   return `${hex.slice(0, 10)}…${hex.slice(-4)}`;
 }
 

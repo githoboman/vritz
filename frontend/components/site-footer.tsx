@@ -59,9 +59,13 @@ export function SiteFooter() {
             ))}
           </div>
         </div>
-        <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-4 border-t border-white/10 pt-6 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} {SITE.name}. Privacy-preserving compliance for tokenized RWA.</p>
-          <p>Built on Casper · Casper Agentic Buildathon 2026</p>
+          <div className="flex items-center gap-4">
+            <p>Built on BOT Chain</p>
+            <a href="https://botchain.ai" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">botchain.ai</a>
+            <a href="https://scan.botchain.ai" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">scan.botchain.ai</a>
+          </div>
         </div>
       </Container>
     </footer>

@@ -37,8 +37,8 @@ const CREDENTIAL_TTL_SECS = Number(process.env.CREDENTIAL_TTL_SECS ?? 90 * 86_40
 
 function accountHex(s: unknown): string | null {
   if (typeof s !== "string") return null;
-  const hex = s.replace(/^account-hash-/, "").toLowerCase();
-  return /^[0-9a-f]{64}$/.test(hex) ? hex : null;
+  const hex = s.toLowerCase();
+  return /^0x[0-9a-f]{40}$/.test(hex) ? hex : null;
 }
 
 export async function POST(req: Request): Promise<Response> {
@@ -103,9 +103,7 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     // (5) sanctions screening — fail-closed on unavailable/stale data
-    const linkedEthAddress = typeof body.linkedEthAddress === "string" && body.linkedEthAddress
-      ? body.linkedEthAddress : null;
-    const s = await screenParties({ casperAccountHex: account, linkedEthAddress });
+    const s = await screenParties({ ethAddress: account });
     if (!s.clean) {
       return Response.json(
         { error: `screening hit (${s.hit?.list})`, screen: s },

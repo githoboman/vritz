@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     "tokenized assets",
     "RWA compliance",
     "zero-knowledge",
-    "Casper",
+    "BOT Chain",
     "ERC-3643",
     "selective disclosure",
     "on-chain compliance",

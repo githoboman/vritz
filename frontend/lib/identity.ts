@@ -8,7 +8,7 @@
   commitment. The derivation signature itself must never be sent anywhere —
   anyone holding it could recompute the secret.
 
-  ed25519 wallet signatures are deterministic (RFC 8032), so the same wallet
+  EVM personal_sign signatures are deterministic, so the same wallet
   re-derives the same secret across sessions and can refresh its credential.
   Known limitation (documented in README "Known limitations"): any dapp that
   convinces the wallet to sign this exact message could recompute the secret —

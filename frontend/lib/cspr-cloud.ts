@@ -25,7 +25,7 @@ const JUNK_HOLDER_PREFIXES = [
 
 function isJunkHolder(holder: string | null): boolean {
   if (!holder) return false;
-  const hex = holder.replace(/^account-hash-/, "").toLowerCase();
+  const hex = holder.toLowerCase();
   return JUNK_HOLDER_PREFIXES.some((p) => hex.startsWith(p));
 }
 

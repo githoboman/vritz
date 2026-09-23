@@ -25,9 +25,9 @@ const ZKEY = join(PUB, "elig2_final.zkey");
 const VKEY = JSON.parse(readFileSync(join(PUB, "elig2_vkey.json"), "utf8"));
 
 const TEST_ISSUER_KEY = "e2".repeat(32);
-// Two distinct fake wallet signatures (128 hex chars = ed25519 sig length).
-const SIG_A = "01" + "ab".repeat(64);
-const SIG_B = "01" + "cd".repeat(64);
+// Two distinct fake wallet signatures (130 hex chars = EVM sig length).
+const SIG_A = "0x" + "ab".repeat(65);
+const SIG_B = "0x" + "cd".repeat(65);
 
 const saved = process.env.ISSUER_EDDSA_KEY;
 beforeAll(() => { process.env.ISSUER_EDDSA_KEY = TEST_ISSUER_KEY; });
