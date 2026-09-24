@@ -28,14 +28,14 @@ type Scene = {
   cta: string;
 };
 
-// A SCRIPTED replay of the two real casper-test outcomes (the allowed transfer and
+// A SCRIPTED replay of the two real botchain-testnet outcomes (the allowed transfer and
 // the recipient-aware deny, verified on-chain — see the proof links on /docs/verify).
 // Nothing in this widget talks to the chain; it is labeled "SCRIPTED DEMO" in the UI.
 const SCENES: Scene[] = [
   {
     command: "Vritz tx transfer Vritz-001 --to 0x4c2d…7b8a",
     logs: [
-      { text: "replaying deploy → casper-test (scripted)", tone: "dim" },
+      { text: "replaying deploy → botchain-testnet (scripted)", tone: "dim" },
       { text: "filter ▸ asset frozen?  false", tone: "default" },
       { text: "filter ▸ sender revoked / frozen?  false", tone: "default" },
       { text: "filter ▸ recipient credential = ACTIVE?  ACTIVE", tone: "good" },
@@ -54,7 +54,7 @@ const SCENES: Scene[] = [
   {
     command: "Vritz tx transfer Vritz-001 --to 0x9f0b…a3e1",
     logs: [
-      { text: "replaying deploy → casper-test (scripted)", tone: "dim" },
+      { text: "replaying deploy → botchain-testnet (scripted)", tone: "dim" },
       { text: "filter ▸ asset frozen?  false", tone: "default" },
       { text: "filter ▸ sender revoked / frozen?  false", tone: "default" },
       { text: "filter ▸ recipient credential = ACTIVE?  REVOKED", tone: "bad" },
@@ -194,7 +194,7 @@ export function DemoBlock() {
             <span className="h-2.5 w-2.5 rounded-full bg-pending/60" />
             <span className="h-2.5 w-2.5 rounded-full bg-active/60" />
           </span>
-          <span className="ml-1 font-mono text-xs text-ink-subtle">Vritz@casper-test · filter</span>
+          <span className="ml-1 font-mono text-xs text-ink-subtle">Vritz@botchain-testnet · filter</span>
         </div>
         <div className="flex items-center gap-3 font-mono text-xs text-ink-subtle">
           <span className="flex items-center gap-1.5" title="This terminal is a scripted replay of real testnet outcomes — it does not talk to the chain. Verified tx links: /docs/verify">
@@ -226,7 +226,7 @@ export function DemoBlock() {
 
         {phase === "idle" && (
           <p className="mt-2 text-white/35">
-            <span className="text-pending/70">●</span> scripted replay of verified casper-test outcomes — press play
+            <span className="text-pending/70">●</span> scripted replay of verified botchain-testnet outcomes — press play
           </p>
         )}
 

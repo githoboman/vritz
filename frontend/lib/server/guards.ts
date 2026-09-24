@@ -35,5 +35,5 @@ export function markOnboarded(account: string): void {
 }
 
 export function isTestnet(): boolean {
-  return (process.env.CASPER_CHAIN ?? "casper-test") === "casper-test";
+  return (process.env.BOTCHAIN_CHAIN ?? "botchain-testnet") === "botchain-testnet";
 }

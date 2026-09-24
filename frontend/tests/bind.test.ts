@@ -20,7 +20,7 @@ function wallet() {
   const publicKey = "01" + pub;
   const account = publicKeyToAccountHash(publicKey);
   const sign = (message: string): string => {
-    const bytes = new TextEncoder().encode(`Casper Message:\n${message}`);
+    const bytes = new TextEncoder().encode(`EVM Message:\n${message}`);
     return "01" + Buffer.from(ed25519.sign(bytes, seed)).toString("hex");
   };
   return { publicKey, account, sign };

@@ -114,7 +114,7 @@ export default async function IssuerDashboard() {
             <dl className="space-y-3 text-sm">
               <Row term="When">at onboarding / refresh only (no scheduled sweep)</Row>
               <Row term="Live source">OFAC SDN digital-currency list (ETH addresses), fetched with content-hash + timestamp</Row>
-              <Row term="Casper mapping">labeled demo denylist — illustrative</Row>
+              <Row term="BOT Chain mapping">labeled demo denylist — illustrative</Row>
               <Row term="Unavailable data">refuses attestation (fail-closed)</Row>
             </dl>
           </Card>

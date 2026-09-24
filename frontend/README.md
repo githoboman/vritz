@@ -21,7 +21,7 @@ npm run lint  # eslint
 
 | Route | What it is |
 | --- | --- |
-| `/` | Landing: hero, the two pains, how-it-works, the on-chain "DENIED" demo, differentiation, trust flex, verticals, the honest ZK claim, Built-on-Casper, CTA |
+| `/` | Landing: hero, the two pains, how-it-works, the on-chain "DENIED" demo, differentiation, trust flex, verticals, the honest ZK claim, Built-on-BOT-Chain, CTA |
 | `/app` | Wallet-gated app shell + surface switcher |
 | `/app/issuer` | Compliance control room: live pseudonymous holder roster (curation counts disclosed), real rule set, screening scope, officer actions (labeled demo UI), audit trail |
 | `/app/investor` | ZK proving stepper: wallet-derived identity secret + witness stay in the browser; demo-issuer claims; linked-ETH sanctions field |

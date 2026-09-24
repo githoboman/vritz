@@ -48,7 +48,7 @@ export function GET() {
             <div style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: "#1a48e0" }} />
             <div style={{ fontSize: 22, color: "#8a94a6" }}>{SITE.domain}</div>
           </div>
-          <div style={{ fontSize: 22, color: "#8a94a6" }}>Built on Casper</div>
+          <div style={{ fontSize: 22, color: "#8a94a6" }}>Built on BOT Chain</div>
         </div>
       </div>
     ),

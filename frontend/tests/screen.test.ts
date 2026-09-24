@@ -3,7 +3,7 @@
   - a sanctioned LINKED ETH address (an identifier the live OFAC list can contain)
     is denied
   - a clean linked address / account passes
-  - the demo Casper denylist fires and is labeled as demo
+  - the demo denylist fires and is labeled as demo
   - unavailable or stale list data refuses attestation (fail closed)
 */
 
@@ -56,7 +56,7 @@ describe("sanctions screening", () => {
     process.env.DEMO_SANCTIONED_ACCOUNTS = `account-hash-${ACCOUNT}`;
     const res = await screenParties({ casperAccountHex: ACCOUNT });
     expect(res.clean).toBe(false);
-    expect(res.hit?.list).toBe("demo-casper-denylist");
+    expect(res.hit?.list).toBe("demo-denylist");
   });
 
   it("rejects a malformed linked ETH address", async () => {

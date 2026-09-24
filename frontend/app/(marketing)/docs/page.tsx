@@ -22,6 +22,7 @@ export default function DocsIntro() {
         moment they aren&apos;t — with zero investor PII on screen. Tokenizing an asset is easy;
         keeping it compliant for its whole life is the blocker. Vritz solves it.
       </p>
+      <p>
         It speaks the institutional security-token model the industry already trusts:{" "}
         <strong>identity, claims, compliance rules, transfer restrictions</strong>. Vritz brings 
         that model to BOT Chain&apos;s native ecosystem, operating on standard EVM components and Web3 standards.

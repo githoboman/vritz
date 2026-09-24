@@ -8,7 +8,7 @@
   4. full public-input binding: nullifier/commitment taken from the verified proof;
      issuerAx/issuerAy/assetId/allowedRoot must equal the canonical registry values
   5. sanctions screening (live OFAC ETH list for the linked ETH address; labeled
-     demo Casper denylist) — unavailable/stale data refuses attestation
+     demo denylist) — unavailable/stale data refuses attestation
   6. attest on-chain, storing the HOLDER'S OWN proof bytes (ark encoding of the
      submitted snarkjs proof) with the holder's own public inputs
 
