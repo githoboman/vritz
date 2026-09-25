@@ -51,9 +51,9 @@ if sender has a credential AND !is_active(sender) -> false
 return is_active(recipient)    // recipient must be live; no credential -> false
 ```
 
-A holder with no credential cannot receive an asset. The mint sentinel bypasses the sender check (so issuance works) but the recipient must still be active. Any revert in the filter call propagates as CEP-78 user error 159, blocking the transfer.
+A holder with no credential cannot receive an asset. The mint sentinel bypasses the sender check (so issuance works) but the recipient must still be active. Any revert in the filter call propagates as ERC-721 user error 159, blocking the transfer.
 
-Live evidence: transfer to ineligible recipient reverts at [af706a71f42e838ea7029785a2b80803798ebb34f61b00d5804119615a1bdf35](https://testnet.cspr.live/deploy/af706a71f42e838ea7029785a2b80803798ebb34f61b00d5804119615a1bdf35) (CEP-78 user error 159).
+Live evidence: transfer to ineligible recipient reverts at [af706a71f42e838ea7029785a2b80803798ebb34f61b00d5804119615a1bdf35](https://testnet.cspr.live/deploy/af706a71f42e838ea7029785a2b80803798ebb34f61b00d5804119615a1bdf35) (ERC-721 user error 159).
 
 Source: `registry.rs` lines 738–749.
 
@@ -67,7 +67,7 @@ Source: `registry.rs` lines 307–311, `challenge.rs` lines 249–259, test `pub
 
 ### 2.6 Idempotent Resolve / No Double-Slash
 
-`resolve` sets `dispute.resolved = true` before any CSPR moves. On re-call it reverts `AlreadyResolved`. The signer bonds are zeroed in the same effects phase, so a re-entrant or repeated call finds an empty bond and cannot extract additional value.
+`resolve` sets `dispute.resolved = true` before any BOT moves. On re-call it reverts `AlreadyResolved`. The signer bonds are zeroed in the same effects phase, so a re-entrant or repeated call finds an empty bond and cannot extract additional value.
 
 Source: `challenge.rs` lines 242–248 and lines 262–265, test `resolve_idempotent_no_double_slash` (line 769).
 
@@ -104,32 +104,32 @@ Source: `registry.rs` lines 33–38 (roles), test `renounce_admin_and_challenge_
 ### 3.1 Constants (read directly from `challenge.rs` lines 33–41)
 
 ```rust
-const REWARD_CSPR: u64 = 300;
-const CHALLENGER_BOND_CSPR: u64 = 250;
-const GAS_ALLOWANCE_CSPR: u64 = 90;   // pegged to the measured resolve() cost, rounded up
+const REWARD_BOT: u64 = 300;
+const CHALLENGER_BOND_BOT: u64 = 250;
+const GAS_ALLOWANCE_BOT: u64 = 90;   // pegged to the measured resolve() cost, rounded up
 ```
 
-The attestor bond is a deploy-time constructor parameter (`attestor_bond: U512`). The production default documented in the source is 5000 CSPR. The demo/testnet deployment uses 250 CSPR (set in `integration/lifecycle.rs` line 21: `const DEMO_BOND_CSPR: u64 = 250`).
+The attestor bond is a deploy-time constructor parameter (`attestor_bond: U512`). The production default documented in the source is 5000 BOT. The demo/testnet deployment uses 250 BOT (set in `integration/lifecycle.rs` line 21: `const DEMO_BOND_BOT: u64 = 250`).
 
 ### 3.2 Fraud Path: Worked Example (Demo Bond, Two Signers)
 
-Setup: two signers each bonded at 250 CSPR (demo). A watcher challenges, paying 250 CSPR. Resolve finds the proof invalid.
+Setup: two signers each bonded at 250 BOT (demo). A watcher challenges, paying 250 BOT. Resolve finds the proof invalid.
 
 ```
-slashed pool   = 250 + 250                    = 500 CSPR   (both signer bonds)
-reward_cap     = GAS_ALLOWANCE + REWARD        = 90 + 300   = 390 CSPR
-to challenger  = reward_cap + challenger_bond  = 390 + 250  = 640 CSPR
-to treasury    = slashed - reward_cap          = 500 - 390  = 110 CSPR  (spendable treasury account — a transfer, not a burn)
+slashed pool   = 250 + 250                    = 500 BOT   (both signer bonds)
+reward_cap     = GAS_ALLOWANCE + REWARD        = 90 + 300   = 390 BOT
+to challenger  = reward_cap + challenger_bond  = 390 + 250  = 640 BOT
+to treasury    = slashed - reward_cap          = 500 - 390  = 110 BOT  (spendable treasury account — a transfer, not a burn)
 ```
 
-The challenger is made whole on gas (90 CSPR) plus earns a 300 CSPR reward and gets their 250 CSPR bond back. The remainder (110 CSPR) is transferred to the treasury account. (The code's local variable is historically named `burned`; the destination is a spendable account, so the docs say treasury transfer.)
+The challenger is made whole on gas (90 BOT) plus earns a 300 BOT reward and gets their 250 BOT bond back. The remainder (110 BOT) is transferred to the treasury account. (The code's local variable is historically named `burned`; the destination is a spendable account, so the docs say treasury transfer.)
 
 Source: `challenge.rs` lines 304–309 (`settle_fraud`), test `resolve_fraud_full_split` (line 698):
 
 ```rust
-let slashed = cspr(2 * ATTESTOR_BOND_CSPR);
-let burned = slashed - cspr(GAS_ALLOWANCE_CSPR + REWARD_CSPR);
-assert_eq!(bal(&w.env, 8), t0 + burned);   // treasury receives exactly 110 CSPR
+let slashed = cspr(2 * ATTESTOR_BOND_BOT);
+let burned = slashed - cspr(GAS_ALLOWANCE_BOT + REWARD_BOT);
+assert_eq!(bal(&w.env, 8), t0 + burned);   // treasury receives exactly 110 BOT
 ```
 
 ### 3.3 Griefing Invariant: A = G + R + B
@@ -161,14 +161,14 @@ But the signer also loses their co-signer's bond (joint liability). For the demo
 
 ```
 signer 0 net = -250 (bond slashed) - 250 (challenger bond paid) + 390 (reward+gas back) - gas
-             = -110 CSPR net loss before tx gas
+             = -110 BOT net loss before tx gas
 co-signer 1  = -250 (bond slashed) + 0 (no recovery)
 ```
 
 The test `self_challenge_is_net_negative` (challenge line 874) verifies this:
 
 ```rust
-let net_loss = cspr(ATTESTOR_BOND_CSPR) - cspr(GAS_ALLOWANCE_CSPR) - cspr(REWARD_CSPR);
+let net_loss = cspr(ATTESTOR_BOND_BOT) - cspr(GAS_ALLOWANCE_BOT) - cspr(REWARD_BOT);
 assert!(bal(&w.env, 0) < a0_initial);
 assert!(a0_initial - bal(&w.env, 0) >= net_loss);
 assert!(bal(&w.env, 1) < a1_initial);   // co-signer also loses with no recovery
@@ -186,19 +186,19 @@ Source: `challenge.rs` lines 313–341 (`settle_frivolous`), test `resolve_frivo
 
 ## 4. On-Chain Gas: Groth16 Verify
 
-The on-chain Groth16 pairing verification (groth16-verifier contract, BN254, arkworks, called only in the fraud-challenge `resolve` path) costs approximately **79.29 CSPR** on the Casper EE. The `GAS_ALLOWANCE_CSPR` constant of 90 is set above this measured value to ensure challengers are always made whole.
+The on-chain Groth16 pairing verification (groth16-verifier contract, BN254, arkworks, called only in the fraud-challenge `resolve` path) costs approximately **79.29 BOT** on the BOT Chain EE. The `GAS_ALLOWANCE_BOT` constant of 90 is set above this measured value to ensure challengers are always made whole.
 
-Source: `challenge.rs` lines 39–41 (comment: "89.60 CSPR rounded up").
+Source: `challenge.rs` lines 39–41 (comment: "89.60 BOT rounded up").
 
-The 79.29 CSPR figure is the measured on-chain cost from live testnet runs. See `scripts/deploy/` for the deploy sequence and raw gas data.
+The 79.29 BOT figure is the measured on-chain cost from live testnet runs. See `scripts/deploy/` for the deploy sequence and raw gas data.
 
 ---
 
 ## 5. Test Evidence
 
-### 5.1 Credential Registry — 57 tests (OdraVM)
+### 5.1 Credential Registry — 57 tests (SolidityVM)
 
-All 57 `#[test]` functions in `contracts/credential-registry/src/registry.rs` run against the OdraVM in-process backend (52 pre-hardening + 5 canonical-input-binding tests added in the final-round pass). The crate also ships a `livenet_read` binary (feature-gated `livenet`) for live state reads against the deployed testnet instance.
+All 57 `#[test]` functions in `contracts/credential-registry/src/registry.rs` run against the SolidityVM in-process backend (52 pre-hardening + 5 canonical-input-binding tests added in the final-round pass). The crate also ships a `livenet_read` binary (feature-gated `livenet`) for live state reads against the deployed testnet instance.
 
 Key correctness groups:
 
@@ -212,7 +212,7 @@ Key correctness groups:
 | Transfer gate | `transfer_allowed_*` (10 tests), `transfer_check_*` (5 tests) |
 | Officer overrides | `officer_revoke_*`, `officer_reinstate_*`, `officer_freeze_*`, `officer_unfreeze_*`, `officer_entrypoints_reject_non_officer`, `officer_action_emits_attribution_event` |
 
-### 5.2 Challenge — 18 tests (OdraVM)
+### 5.2 Challenge — 18 tests (SolidityVM)
 
 All 18 `#[test]` functions in `contracts/challenge/src/challenge.rs`.
 
@@ -258,14 +258,14 @@ The setup in this test mirrors the exact sequence run by `scripts/deploy/wire_wr
 
 ## 6. Live Testnet Evidence
 
-All six contracts are deployed and verified on Casper testnet. Package hashes (stable addresses across upgrades):
+All six contracts are deployed and verified on BOT Chain testnet. Package hashes (stable addresses across upgrades):
 
 | Contract | Package hash |
 |---|---|
 | groth16-verifier | [1785d5a3…](https://testnet.cspr.live/contract-package/1785d5a368b2daa41c490dd83059d8ba8a62631b6112f5fed19e693c82d1d0fd) |
 | credential-registry | [74148da7…](https://testnet.cspr.live/contract-package/74148da7b68ce51e4dfa822af7106daaea7140862106a7b675057caf9ee404ce) |
 | challenge | [8cddad30…](https://testnet.cspr.live/contract-package/8cddad302d2d882070d62f581e6118ab371a24ced22294b81454754c2a5fd07e) |
-| writ_registry_filter (CEP-78 hook) | [0b1f806b…](https://testnet.cspr.live/contract-package/0b1f806b13712752c6740890cb9fae33aa782d47b1c858564d97248c43407fb5) |
+| writ_registry_filter (ERC-721 hook) | [0b1f806b…](https://testnet.cspr.live/contract-package/0b1f806b13712752c6740890cb9fae33aa782d47b1c858564d97248c43407fb5) |
 | writ-cep78 | [2ce2ff55…](https://testnet.cspr.live/contract-package/2ce2ff55ebdeb1e72b85dc0634c77ff7a256fb98086fab6d2969af78386e7c97) |
 | writ-token | [200cd183…](https://testnet.cspr.live/contract-package/200cd1830a58a5e6154bf2ab31168523d7e90fe06d166fd9650712aa120c4e1b) |
 
@@ -276,7 +276,7 @@ Key transaction evidence:
 | Sanctioned sender reverts (filter user-error 159) | [1af2d7e6…](https://testnet.cspr.live/deploy/1af2d7e6821159b83819fed115ba072b7f10090c385ca18e1d5c71d288f4e7f3) |
 | Ineligible recipient reverts (user-error 159) | [af706a71…](https://testnet.cspr.live/deploy/af706a71f42e838ea7029785a2b80803798ebb34f61b00d5804119615a1bdf35) |
 | Regulated holder attest (Poseidon commitment on-chain) | [a2dc0c8a…](https://testnet.cspr.live/deploy/a2dc0c8ad4f90f5b9dd86ada48498a2869c1570d75c5b4bb3f542f6cdb70296b) |
-| Fraud slash (resolve -> Groth16 FALSE -> slash 500, 110 CSPR treasury transfer, resolve consumed 95.1 CSPR incl. the pairing-verify cross-call) | [79cce54a…](https://testnet.cspr.live/deploy/79cce54a4fbd125ee81c120150c77b8eda66d5acc16331c94790e2c51ad9193f) |
+| Fraud slash (resolve -> Groth16 FALSE -> slash 500, 110 BOT treasury transfer, resolve consumed 95.1 BOT incl. the pairing-verify cross-call) | [79cce54a…](https://testnet.cspr.live/deploy/79cce54a4fbd125ee81c120150c77b8eda66d5acc16331c94790e2c51ad9193f) |
 | Post-fraud transfer reverts (RevokedFraud holder, error 159) | [0013547b…](https://testnet.cspr.live/deploy/0013547bf9a13134d14485db39658c9a0576a9e12580129524443f415a00c056) |
 
 ---

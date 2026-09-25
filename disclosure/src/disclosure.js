@@ -123,7 +123,7 @@ class DisclosureStore {
 
 /// Combine the commitment match with the credential's LIVE status and full
 /// attribution trail into the single object the regulator view renders. In the
-/// live frontend `onchain` is read from the chain event store / CSPR.cloud; the
+/// live frontend `onchain` is read from the chain event store / BOT.cloud; the
 /// commitment match is computed locally from the disclosed preimage.
 ///   onchain = { asset_id, holder, commitment, status, history: [events] }
 async function assembleVerdict(onchain, pkg) {

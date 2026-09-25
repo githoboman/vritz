@@ -2,7 +2,7 @@
 
 # Writ V3 — the canonical demo instance (role-revocable, admin renounced)
 
-Network **casper-test** · node `https://node.testnet.casper.network` · explorer https://testnet.cspr.live
+Network **botchain-test** · node `https://node.testnet.botchain.network` · explorer https://testnet.cspr.live
 Deployer (key3, admin → **renounced**): `account-hash-9711698476d5a4f529ad4c2bcc0232ba23d0725b029e482df69075d076b44b3b`
 Officer multisig (2-of-3): `account-hash-ba4c447b6f9852c9765f0b965a5cc8bfd8318a28b8e2d6b15cec8d7b1e00ad15`
 Treasury (burn sink): `account-hash-50f4e6e8…1058bf6`
@@ -22,7 +22,7 @@ Wiring: `grant_challenge(challenge contract)` `f0359764…` · `grant_officer(mu
 
 ## Payable mechanism (the unlock)
 Node config: `pricing_handling = payment_limited`, `enable_addressable_entity = false`.
-Sessions cannot move CSPR from the account main purse (mint err 21 UnapprovedSpendingAmount),
+Sessions cannot move BOT from the account main purse (mint err 21 UnapprovedSpendingAmount),
 which defeats odra's cargo-purse funding by put-deploy AND put-transaction. **Recipe that works
 (all put-deploy except step 2):** (1) a session creates a cargo purse [no spend]; (2) a NATIVE
 transfer funds it [native transfers may leave main]; (3) the payable entrypoint is called with
@@ -53,9 +53,9 @@ Fraud holder Z attested with a **tampered** proof (`98efc564…`).
 | resolve → on-chain verify FALSE → fraud | `f0550884…` |
 | post-fraud NFT transfer → Z REVERT 159 | `ffc08ca3…` |
 
-CSPR movement: q1+q2 bonds (500) slashed → challenger paid **640** (reward 390 + bond refund 250),
+BOT movement: q1+q2 bonds (500) slashed → challenger paid **640** (reward 390 + bond refund 250),
 **BURN 110** to treasury (4.6 → **114.6**). Z status = **RevokedFraud**. Effects (state) preceded
-interactions (CSPR).
+interactions (BOT).
 
 ## Officer multisig (native 2-of-3)
 account-config `d1798129…` (3 keys, thresholds {deployment:2, key_management:2}).

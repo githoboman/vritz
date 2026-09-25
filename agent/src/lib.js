@@ -17,16 +17,16 @@ const REPO_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const KEYS_DIR = process.env.WRIT_KEYS_DIR ?? "/tmp/writ-keys";
 
 
-const NODE = "https://node.testnet.casper.network/rpc";
+const NODE = "https://node.testnet.botchain.network/rpc";
 const ARK_VERIFY = process.env.ARK_VERIFY ?? join(REPO_ROOT, "circuits", "ark-verifier", "target", "release", "ark-verify");
 const WRIT_SIGNER = process.env.WRIT_SIGNER ?? "/tmp/writ-signer/target/release/writ-signer";
-const CASPER = "casper-client";
+const CASPER = "botchain-client";
 const OFAC_LIST_URL =
   "https://raw.githubusercontent.com/0xB10C/ofac-sanctioned-digital-currency-addresses/lists/sanctioned_addresses_ETH.txt";
 
 // ---------- (a) account binding ----------
-// The holder signs blake2b256(nullifier || commitment) with their Casper account
-// key, binding the (off-chain) proof to their on-chain account. Casper pubkey is
+// The holder signs blake2b256(nullifier || commitment) with their BOT Chain account
+// key, binding the (off-chain) proof to their on-chain account. BOT Chain pubkey is
 // tagged 01=ed25519 / 02=secp256k1.
 export function accountBindMessage(nullifierHex, commitmentHex) {
   const bytes = Buffer.concat([Buffer.from(nullifierHex, "hex"), Buffer.from(commitmentHex, "hex")]);
@@ -122,11 +122,11 @@ export async function coordinate(req, keyPaths, threshold, regPackageHash, funde
   return { ok: true, txHash: hash, collected: ok.length, signers: chosen.map((r) => r.sig.pubkey), screen: chosen[0].screen };
 }
 
-// ---------- registry calls via casper-client put-deploy ----------
+// ---------- registry calls via botchain-client put-deploy ----------
 export function putDeploy(entryPoint, argsJson, packageHash, fundedKey, payment) {
   const out = execFileSync(
     CASPER,
-    ["put-deploy", "--node-address", NODE, "--chain-name", "casper-test", "--secret-key", fundedKey,
+    ["put-deploy", "--node-address", NODE, "--chain-name", "botchain-test", "--secret-key", fundedKey,
      "--session-package-hash", packageHash, "--session-entry-point", entryPoint,
      "--session-args-json", argsJson, "--payment-amount", payment],
     { encoding: "utf8" }

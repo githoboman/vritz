@@ -1,9 +1,9 @@
 # Writ — System Architecture
 
-Writ is the [ERC-3643](https://erc3643.org/) / T-REX-style compliance primitive for Casper.
-Casper has joined the ERC-3643 Association (the standards body for compliant RWA tokenization),
-and Writ is built in alignment with that standard. The stack is Odra (contracts), CSPR.click
-(wallet), and CSPR.cloud (reads). The frontend is Next.js / React, deployed on Railway.
+Writ is the [ERC-3643](https://erc3643.org/) / T-REX-style compliance primitive for BOT Chain.
+BOT Chain has joined the ERC-3643 Association (the standards body for compliant RWA tokenization),
+and Writ is built in alignment with that standard. The stack is Solidity (contracts), BOT.click
+(wallet), and BOT.cloud (reads). The frontend is Next.js / React, deployed on Railway.
 
 Live app: <https://writ-app-production.up.railway.app>  
 App docs: <https://writ-app-production.up.railway.app/docs>
@@ -44,7 +44,7 @@ This is the most important thing to understand about Writ.
   blocking + single-use), verifies the proof, binds all six public inputs to the
   pinned issuer/asset/root, and runs sanctions screening
   (`frontend/lib/server/screen.ts` — live OFAC ETH list for a linked address,
-  labeled demo denylist for Casper accounts, fail-closed on stale data). Then two
+  labeled demo denylist for BOT Chain accounts, fail-closed on stale data). Then two
   attestation signatures are produced by env keys held by this one server process
   (`frontend/lib/server/quorum-attest.ts`) — **a single trust domain, not an
   independent quorum**.
@@ -62,14 +62,14 @@ The honest framing: **verify off-chain, commit on-chain; re-verify on-chain only
 
 ## 2. The six contracts
 
-All six are live on `casper-test`. Package hashes (stable addresses) link to the explorer.
+All six are live on `botchain-test`. Package hashes (stable addresses) link to the explorer.
 
 ### 2.1 groth16-verifier
 
 **Source:** `contracts/groth16-verifier/src/verifier.rs`  
 **Package hash:** [`1785d5a3…`](https://testnet.cspr.live/contract-package/1785d5a368b2daa41c490dd83059d8ba8a62631b6112f5fed19e693c82d1d0fd)
 
-Performs the Groth16-BN254 pairing check as pure-WASM arkworks inside the contract (Casper testnet has no native EC pairing host function in `vm_casper_v1`). The eligibility circuit's verifying key is compiled in as an immutable constant (`VK_BYTES = include_bytes!("../fixtures/vk_uncompressed.bin")`); it cannot be swapped after install.
+Performs the Groth16-BN254 pairing check as pure-WASM arkworks inside the contract (BOT Chain testnet has no native EC pairing host function in `vm_botchain_v1`). The eligibility circuit's verifying key is compiled in as an immutable constant (`VK_BYTES = include_bytes!("../fixtures/vk_uncompressed.bin")`); it cannot be swapped after install.
 
 Public interface: one entrypoint.
 
@@ -81,7 +81,7 @@ verify(proof: Bytes, public_inputs: Bytes) -> bool
 
 **Called exclusively by the challenge contract's `resolve` path.** It is never called at onboarding.
 
-Measured gas for a full pairing verify on the Casper EE: **~79.29 CSPR**.
+Measured gas for a full pairing verify on the BOT Chain EE: **~79.29 BOT**.
 
 ### 2.2 credential-registry
 
@@ -98,12 +98,12 @@ The on-chain heart of the compliance layer. Stores per-holder eligibility creden
 - `proof: Bytes`, `public_inputs: Bytes` — stored for fraud adjudication
 - `frozen_by_challenge: bool` — distinguishes a challenge-initiated freeze from an officer hold
 
-**Roles** (Odra `AccessControl`):
+**Roles** (Solidity `AccessControl`):
 
 | Role | Holder | Authority |
 |---|---|---|
 | `QUORUM_ROLE` | Agent operator account | `attest`, `revoke` |
-| `OFFICER_ROLE` | Compliance officer account (demo: a single key; production: Casper M-of-N associated-key multisig) | `officer_freeze/unfreeze/revoke/reinstate`, `freeze_asset/unfreeze_asset` |
+| `OFFICER_ROLE` | Compliance officer account (demo: a single key; production: BOT Chain M-of-N associated-key multisig) | `officer_freeze/unfreeze/revoke/reinstate`, `freeze_asset/unfreeze_asset` |
 | `CHALLENGE_ROLE` | Challenge contract | `freeze`, `unfreeze`, `revoke_fraud`, `set_bonded` |
 | `DEFAULT_ADMIN_ROLE` | Deployer (renounced post-wiring) | `grant_challenge`, `grant_officer`, `revoke_role` |
 
@@ -129,10 +129,10 @@ The optimistic fraud-proof layer. Attestations are accepted optimistically; anyo
 
 Entrypoints:
 
-- `bond(attestor)` — payable; attestor posts exactly `attestor_bond` CSPR and is mirrored as bonded in the registry. Only bonded keys may serve as quorum signers.
+- `bond(attestor)` — payable; attestor posts exactly `attestor_bond` BOT and is mirrored as bonded in the registry. Only bonded keys may serve as quorum signers.
 - `withdraw(attestor)` — returns bond only when `attestor_outstanding == 0` (no still-challengeable credentials) and the cooldown has elapsed. Prevents attest-fraud-then-flee.
-- `challenge(asset_id, holder)` — payable (exactly `challenger_bond` CSPR); must target an `is_active` credential. Freezes the credential via the registry (first-challenge-wins, enforced by the registry's `NotFreezable` guard on already-frozen credentials).
-- `resolve(asset_id, holder)` — anyone may call; reads the credential's own stored proof and public inputs from the registry and calls `groth16_verifier.verify`. Idempotent (reverts on second call). Effects (state flips) precede interactions (CSPR moves).
+- `challenge(asset_id, holder)` — payable (exactly `challenger_bond` BOT); must target an `is_active` credential. Freezes the credential via the registry (first-challenge-wins, enforced by the registry's `NotFreezable` guard on already-frozen credentials).
+- `resolve(asset_id, holder)` — anyone may call; reads the credential's own stored proof and public inputs from the registry and calls `groth16_verifier.verify`. Idempotent (reverts on second call). Effects (state flips) precede interactions (BOT moves).
 - `settle_expired(asset_id, holder)` — exposes the registry keeper function.
 
 Fraud resolution: proof **invalid** → `revoke_fraud`; full signer bond pool slashed; challenger receives gas allowance + reward + bond refund; remainder **transferred to the treasury account** (a spendable account — a treasury transfer, not a burn).
@@ -141,10 +141,10 @@ Frivolous challenge resolution: proof **valid** → credential unfrozen (Active,
 
 ### 2.4 transfer-filter (writ_registry_filter)
 
-**Source:** `contracts/transfer-filter/src/filter.rs` (Odra adapter) and `contracts/writ-cep78/fork/contracts/test-contracts/writ_registry_filter/src/main.rs` (production CEP-78 hook)  
+**Source:** `contracts/transfer-filter/src/filter.rs` (Solidity adapter) and `contracts/writ-cep78/fork/contracts/test-contracts/writ_registry_filter/src/main.rs` (production ERC-721 hook)  
 **Package hash:** [`0b1f806b…`](https://testnet.cspr.live/contract-package/0b1f806b13712752c6740890cb9fae33aa782d47b1c858564d97248c43407fb5)
 
-The CEP-78 `transfer_filter_contract`. On every transfer the token calls:
+The ERC-721 `transfer_filter_contract`. On every transfer the token calls:
 
 - `can_transfer(source_key, target_key) -> u8` — delegates to `registry.transfer_allowed(asset_id, from, to)`. Returns `1` (proceed) or `0` (deny). A revert in the registry call propagates and aborts the entire NFT operation (fail-safe deny).
 - `mint_allowed(target_key) -> bool` — delegates to `registry.is_active(asset_id, holder)`. Mint is gated separately from transfer.
@@ -158,14 +158,14 @@ The filter is **recipient-aware**: it checks both sender and recipient eligibili
 **Source:** `contracts/writ-cep78/fork/`  
 **Package hash:** [`2ce2ff55…`](https://testnet.cspr.live/contract-package/2ce2ff55ebdeb1e72b85dc0634c77ff7a256fb98086fab6d2969af78386e7c97)
 
-The RWA bond NFT. A real CEP-78 implementation wired to the transfer-filter contract (`transfer_filter_contract` install argument). Mint is gated by `mint_allowed`; every transfer is gated by `can_transfer`. The fork is the production-deployed contract; the `writ_registry_filter` test contract in the fork tree is the compatibility shim that exposes the `can_transfer` / `mint_allowed` entrypoints the CEP-78 spec requires.
+The RWA bond NFT. A real ERC-721 implementation wired to the transfer-filter contract (`transfer_filter_contract` install argument). Mint is gated by `mint_allowed`; every transfer is gated by `can_transfer`. The fork is the production-deployed contract; the `writ_registry_filter` test contract in the fork tree is the compatibility shim that exposes the `can_transfer` / `mint_allowed` entrypoints the ERC-721 spec requires.
 
 ### 2.6 writ-token
 
 **Source:** `contracts/writ-token/src/token.rs`  
 **Package hash:** [`200cd183…`](https://testnet.cspr.live/contract-package/200cd1830a58a5e6154bf2ab31168523d7e90fe06d166fd9650712aa120c4e1b)
 
-An Odra-native filter-gated token used in the integration test suite (`contracts/integration/`). Captures the one property the integration cares about: every `transfer` call consults the configured filter, which delegates to the registry compliance gate. A transfer to or from an ineligible party reverts with `TransferDenied`. This contract is the EE-testable model of the CEP-78 behavior; the live RWA NFT on testnet uses writ-cep78.
+An Solidity-native filter-gated token used in the integration test suite (`contracts/integration/`). Captures the one property the integration cares about: every `transfer` call consults the configured filter, which delegates to the registry compliance gate. A transfer to or from an ineligible party reverts with `TransferDenied`. This contract is the EE-testable model of the ERC-721 behavior; the live RWA NFT on testnet uses writ-cep78.
 
 ---
 
@@ -252,7 +252,7 @@ function:
 1. Derives `commitment` and `nullifier` from the circuit's public signals using `fieldToLe32` (bigint field element → 32-byte little-endian buffer, matching the on-chain `ByteArray` encoding).
 2. Constructs the canonical message: `strBytes(asset_id) || keyAccountBytes(holderHex) || commitment[32] || nullifier[32] || u64le(expiry)`. This is byte-exact with the Rust `canonical_message` function in `registry.rs`.
 3. Signs the message with each of the two env quorum keys using `@noble/curves/ed25519`, prefixing signatures with the `01` algorithm tag.
-4. Builds and signs a Casper `put_deploy` via `casper-js-sdk` targeting the registry package hash by `newStoredVersionContractByHash`.
+4. Builds and signs a BOT Chain `put_deploy` via `botchain-js-sdk` targeting the registry package hash by `newStoredVersionContractByHash`.
 5. Submits via raw JSON-RPC (`account_put_deploy`), avoiding the SDK's own RPC client (incompatible with the Next.js server runtime).
 
 The proof is stored on-chain but not re-verified by the registry at attest time. The off-chain snarkjs verify (step in the API route before calling `submitAttest`) is the verification gate.
@@ -261,7 +261,7 @@ Supporting server-only modules:
 
 | File | Purpose |
 |---|---|
-| `frontend/lib/server/screen.ts` | Sanctions screening with honest scope: the live OFAC SDN ETH-address list (content-hash + timestamp versioned) is screened against an optional linked ETH address — an identifier that can actually match; Casper-account matching uses a labeled demo denylist. Stale (>24h) or unavailable data refuses attestation (fail-closed). |
+| `frontend/lib/server/screen.ts` | Sanctions screening with honest scope: the live OFAC SDN ETH-address list (content-hash + timestamp versioned) is screened against an optional linked ETH address — an identifier that can actually match; BOT Chain-account matching uses a labeled demo denylist. Stale (>24h) or unavailable data refuses attestation (fail-closed). |
 | `frontend/lib/server/issuer-input.ts` | The demo issuer. Signs the claim set for a **client-supplied** identity commitment `Poseidon(identitySecret)`; never sees or derives the identity secret or salt, so it cannot rebuild the witness. Fails closed without `ISSUER_EDDSA_KEY` (no default key exists in the repo). |
 | `frontend/lib/identity.ts` (client) | Derives `identitySecret`/`salt` from a wallet signature in the browser; computes the identity commitment with circomlibjs. The derivation signature is never transmitted. |
 | `frontend/lib/server/bind.ts` | **Mandatory, blocking** wallet-control verification: server-issued single-use nonce, domain-separated message (chain/registry/asset/account/nonce/expiry), ed25519 + secp256k1 signature check, replay rejection. No claims and no attest without it. |
@@ -297,13 +297,13 @@ signers rejected. The `agent/` directory implements the independent N-verifier
 shape used by the CLI/e2e path; distributing key custody to such services is the
 production model.
 
-**Only bonded keys may sign.** A quorum key must post `attestor_bond` CSPR in the challenge contract before it can co-sign a credential. This creates joint economic liability for every attestation.
+**Only bonded keys may sign.** A quorum key must post `attestor_bond` BOT in the challenge contract before it can co-sign a credential. This creates joint economic liability for every attestation.
 
 **Withdraw guard.** A key with any still-challengeable credential (`attestor_outstanding > 0`) cannot withdraw its bond. The outstanding counter decrements when a credential is revoked, expires, or a dispute resolves.
 
 ### Officer
 
-The `OFFICER_ROLE` is a Casper account hash; the contract trusts that account. The production model puts a weighted M-of-N multisig (Casper associated keys) behind it — `scripts/officer_multisig/setup_and_demo.sh` demonstrates the native mechanism — but **the deployed demo officer is a single key**, stated plainly here and in the UI. Every officer action emits an `OfficerAction` event with a `reason_hash` committing to the off-chain justification.
+The `OFFICER_ROLE` is a BOT Chain account hash; the contract trusts that account. The production model puts a weighted M-of-N multisig (BOT Chain associated keys) behind it — `scripts/officer_multisig/setup_and_demo.sh` demonstrates the native mechanism — but **the deployed demo officer is a single key**, stated plainly here and in the UI. Every officer action emits an `OfficerAction` event with a `reason_hash` committing to the off-chain justification.
 
 Hard boundary: the officer **cannot** unfreeze a credential frozen by an in-flight challenge (`frozen_by_challenge == true`). A disputed credential can only be unfrozen by the challenge contract after `resolve` runs.
 
@@ -318,8 +318,8 @@ Hard boundary: the officer **cannot** produce or alter `RevokedFraud`. That stat
 Screening runs at onboarding and refresh only — there is no autonomous background
 daemon polling the holder population. Scope, honestly: the live OFAC SDN
 digital-currency list contains **ETH addresses**, so it is screened against an
-optional linked ETH address; Casper-account matching uses a labeled demo
-denylist (illustrative — no official Casper-account SDN mapping exists). Every
+optional linked ETH address; BOT Chain-account matching uses a labeled demo
+denylist (illustrative — no official BOT Chain-account SDN mapping exists). Every
 screening result records source URL, fetch timestamp, and list content hash;
 stale or unavailable data refuses attestation.
 
@@ -327,20 +327,20 @@ stale or unavailable data refuses attestation.
 
 ## 6. Economics and incentive invariants
 
-All values are constructor arguments; the testnet demo uses 250 CSPR bonds for convenience. The documented production defaults are in `challenge.rs`.
+All values are constructor arguments; the testnet demo uses 250 BOT bonds for convenience. The documented production defaults are in `challenge.rs`.
 
 | Parameter | Testnet demo | Source |
 |---|---|---|
-| `attestor_bond` | 250 CSPR | `ATTESTOR_BOND_CSPR` in `challenge.rs` |
-| `challenger_bond` | 250 CSPR | `CHALLENGER_BOND_CSPR` |
-| `reward` | 300 CSPR | `REWARD_CSPR` |
-| `gas_allowance` | 90 CSPR | `GAS_ALLOWANCE_CSPR` (covers full `resolve` gas at ~79.29 CSPR) |
+| `attestor_bond` | 250 BOT | `ATTESTOR_BOND_BOT` in `challenge.rs` |
+| `challenger_bond` | 250 BOT | `CHALLENGER_BOND_BOT` |
+| `reward` | 300 BOT | `REWARD_BOT` |
+| `gas_allowance` | 90 BOT | `GAS_ALLOWANCE_BOT` (covers full `resolve` gas at ~79.29 BOT) |
 
 **Fraud outcome (2 signers, testnet bonds):**
 
-- Slashed pool: 2 × 250 = 500 CSPR.
-- Challenger receives: min(gas_allowance + reward, slashed) + bond = min(390, 500) + 250 = 640 CSPR.
-- Treasury transfer: 500 − 390 = **110 CSPR** (to the configured treasury account — spendable, not destroyed).
+- Slashed pool: 2 × 250 = 500 BOT.
+- Challenger receives: min(gas_allowance + reward, slashed) + bond = min(390, 500) + 250 = 640 BOT.
+- Treasury transfer: 500 − 390 = **110 BOT** (to the configured treasury account — spendable, not destroyed).
 
 **Griefing invariant:** `A = G + R + B`. A successful challenger is made whole on gas (G), earns the reward (R), and is refunded their bond (B). The rest goes to the treasury.
 
@@ -414,15 +414,15 @@ The disclosure suite (`disclosure/src/test_disclosure.js`) reuses the same Posei
 | `credential-registry` | 57/57 | RBAC, sig validation, nullifier replay, binding (incl. canonical issuer/asset/root pinning), expiry, state machine, transfer matrix |
 | `challenge` | 18/18 | Bonding, withdraw guard, fraud/frivolous resolve, idempotency, expiry-under-freeze, self-slash deterrence |
 | `groth16-verifier` | 8/8 | Valid/tampered proof + inputs; checked-deserialization rejections (malformed, off-curve, out-of-subgroup, non-canonical) |
-| CEP-78 ⇄ filter ⇄ registry E2E | fork `writ` tests | Real-EE gating incl. revoked sender, expired credential, operator no-bypass, missing-registry fail-closed |
+| ERC-721 ⇄ filter ⇄ registry E2E | fork `writ` tests | Real-EE gating incl. revoked sender, expired credential, operator no-bypass, missing-registry fail-closed |
 | `integration` lifecycle | 1 chained scenario | attest → active → gated transfer → revoke → re-attest → fraud challenge → slash → treasury transfer |
 | `frontend` | 28/28 | bind, fail-closed issuer, screening, proof serde vs arkworks bytes, full in-node prove + input binding |
 | `disclosure` | 14/14 | Poseidon recompute vs live on-chain commitment, tamper detection, compelled disclosure round-trip |
 
-Real gas measurements from the Casper EE:
+Real gas measurements from the BOT Chain EE:
 
-- Fraud `resolve` (incl. the on-chain Groth16 pairing verify cross-call): **95.1 CSPR** measured on the V5 set (`79cce54a`); the isolated `verify` entrypoint measured ~79.29 CSPR on V4
-- Fraud-slash treasury transfer: **110 CSPR** (testnet demo bond sizes)
+- Fraud `resolve` (incl. the on-chain Groth16 pairing verify cross-call): **95.1 BOT** measured on the V5 set (`79cce54a`); the isolated `verify` entrypoint measured ~79.29 BOT on V4
+- Fraud-slash treasury transfer: **110 BOT** (testnet demo bond sizes)
 
 Live testnet transaction proofs:
 
@@ -431,4 +431,4 @@ Live testnet transaction proofs:
 | Regulated holder attest (real Poseidon commitment) | [`a2dc0c8a…`](https://testnet.cspr.live/deploy/a2dc0c8ad4f90f5b9dd86ada48498a2869c1570d75c5b4bb3f542f6cdb70296b) |
 | Transfer from sanctioned sender reverts (filter error 159) | [`1af2d7e6…`](https://testnet.cspr.live/deploy/1af2d7e6821159b83819fed115ba072b7f10090c385ca18e1d5c71d288f4e7f3) |
 | Transfer to ineligible recipient reverts (recipient-aware deny, error 159) | [`af706a71…`](https://testnet.cspr.live/deploy/af706a71f42e838ea7029785a2b80803798ebb34f61b00d5804119615a1bdf35) |
-| Fraud slash (resolve → Groth16 FALSE → slash 500, 110 CSPR treasury transfer) | [`79cce54a…`](https://testnet.cspr.live/deploy/79cce54a4fbd125ee81c120150c77b8eda66d5acc16331c94790e2c51ad9193f) |
+| Fraud slash (resolve → Groth16 FALSE → slash 500, 110 BOT treasury transfer) | [`79cce54a…`](https://testnet.cspr.live/deploy/79cce54a4fbd125ee81c120150c77b8eda66d5acc16331c94790e2c51ad9193f) |

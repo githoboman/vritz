@@ -39,13 +39,13 @@ describe("sanctions screening", () => {
   });
 
   it("denies a sanctioned linked ETH address against the live-list snapshot", async () => {
-    const res = await screenParties({ casperAccountHex: ACCOUNT, linkedEthAddress: SANCTIONED_ETH });
+    const res = await screenParties({ botchainAccountHex: ACCOUNT, linkedEthAddress: SANCTIONED_ETH });
     expect(res.clean).toBe(false);
     expect(res.hit).toEqual({ identifier: SANCTIONED_ETH, list: "ofac-sdn-eth" });
   });
 
   it("accepts a clean linked ETH address and a clean account", async () => {
-    const res = await screenParties({ casperAccountHex: ACCOUNT, linkedEthAddress: CLEAN_ETH });
+    const res = await screenParties({ botchainAccountHex: ACCOUNT, linkedEthAddress: CLEAN_ETH });
     expect(res.clean).toBe(true);
     expect(res.hit).toBeNull();
     expect(res.meta.entries).toBeGreaterThan(0);
@@ -54,21 +54,21 @@ describe("sanctions screening", () => {
 
   it("denies an account on the labeled demo denylist", async () => {
     process.env.DEMO_SANCTIONED_ACCOUNTS = `account-hash-${ACCOUNT}`;
-    const res = await screenParties({ casperAccountHex: ACCOUNT });
+    const res = await screenParties({ botchainAccountHex: ACCOUNT });
     expect(res.clean).toBe(false);
     expect(res.hit?.list).toBe("demo-denylist");
   });
 
   it("rejects a malformed linked ETH address", async () => {
     await expect(
-      screenParties({ casperAccountHex: ACCOUNT, linkedEthAddress: "not-an-address" }),
+      screenParties({ botchainAccountHex: ACCOUNT, linkedEthAddress: "not-an-address" }),
     ).rejects.toThrow(/ETH address/);
   });
 
   it("refuses to attest when list data is unavailable (no cache)", async () => {
     _setScreenCache(null);
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("network down"); }));
-    await expect(screenParties({ casperAccountHex: ACCOUNT })).rejects.toThrow(
+    await expect(screenParties({ botchainAccountHex: ACCOUNT })).rejects.toThrow(
       ScreeningUnavailableError,
     );
   });
@@ -76,7 +76,7 @@ describe("sanctions screening", () => {
   it("refuses to attest when cached data is stale (>24h) and refresh fails", async () => {
     _setScreenCache(freshSnapshot(25 * 3_600_000));
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("network down"); }));
-    await expect(screenParties({ casperAccountHex: ACCOUNT })).rejects.toThrow(
+    await expect(screenParties({ botchainAccountHex: ACCOUNT })).rejects.toThrow(
       ScreeningUnavailableError,
     );
   });
@@ -84,7 +84,7 @@ describe("sanctions screening", () => {
   it("serves a degraded-but-fresh cache (<24h) when refresh fails", async () => {
     _setScreenCache(freshSnapshot(2 * 3_600_000));
     vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("network down"); }));
-    const res = await screenParties({ casperAccountHex: ACCOUNT, linkedEthAddress: SANCTIONED_ETH });
+    const res = await screenParties({ botchainAccountHex: ACCOUNT, linkedEthAddress: SANCTIONED_ETH });
     expect(res.clean).toBe(false);
   });
 });

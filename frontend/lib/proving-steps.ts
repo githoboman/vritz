@@ -8,7 +8,7 @@ export const PROVING_STEPS = [
   {
     key: "connect",
     title: "Connect wallet",
-    body: "Connect with CSPR.click. No documents are requested — eligibility claims come from the demo issuer, not an external KYC provider.",
+    body: "Connect with BOT.click. No documents are requested — eligibility claims come from the demo issuer, not an external KYC provider.",
   },
   {
     key: "claims",
@@ -28,6 +28,6 @@ export const PROVING_STEPS = [
   {
     key: "status",
     title: "Credential active",
-    body: "Your credential — commitment, nullifier, expiry, and your own proof bytes — is on-chain. Every CEP-78 transfer is now gated against the registry.",
+    body: "Your credential — commitment, nullifier, expiry, and your own proof bytes — is on-chain. Every ERC-721 transfer is now gated against the registry.",
   },
 ] as const;

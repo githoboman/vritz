@@ -52,7 +52,7 @@ issuer signature `sigR8x, sigR8y, sigS`, and the jurisdiction Merkle path
    — hiding, for later selective disclosure.
 
 Account binding is **not** in-circuit — done at submission: the holder signs a
-server-issued, nonce-bound message with their Casper key, and the server verifies
+server-issued, nonce-bound message with their BOT Chain key, and the server verifies
 it (blocking) before issuing claims or attesting.
 
 **No in-circuit expiry/freshness** (known limitation, disclosed): the signed

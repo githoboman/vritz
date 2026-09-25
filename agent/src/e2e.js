@@ -21,7 +21,7 @@ const CIRC = join(REPO_ROOT, "circuits", "build");
 const READER = "credential_registry";
 const hex = (u8) => Buffer.from(u8).toString("hex");
 
-function casperAccountHash(pubkey32) {
+function botchainAccountHash(pubkey32) {
   return hex(blake2b(Buffer.concat([Buffer.from("ed25519"), Buffer.from([0]), Buffer.from(pubkey32)]), { dkLen: 32 }));
 }
 function readCred(holderHash) {
@@ -34,11 +34,11 @@ function readCred(holderHash) {
 }
 
 async function main() {
-  // ---- demo holder: real ed25519 Casper account ----
+  // ---- demo holder: real ed25519 BOT Chain account ----
   const sk = ed25519.utils.randomPrivateKey();
   const pk = ed25519.getPublicKey(sk);
   const holderPubkey = "01" + hex(pk);
-  const holderHash = casperAccountHash(pk);
+  const holderHash = botchainAccountHash(pk);
   console.log("Holder account-hash:", holderHash);
 
   // ---- proof + public outputs from the eligibility circuit ----

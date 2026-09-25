@@ -22,7 +22,7 @@ export function SiteHeader() {
             className="hidden items-center gap-1.5 rounded-full border border-brand-border bg-brand-subtle px-3 py-1 text-xs font-medium text-brand transition-colors hover:bg-brand-subtle/70 sm:inline-flex"
           >
             <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-brand" />
-            Vote on CSPR.fans
+            Vote on BOT.fans
           </Link>
         </div>
 
@@ -91,7 +91,7 @@ export function SiteHeader() {
             onClick={() => setOpen(false)}
             className="rounded-md px-3 py-2.5 text-sm font-medium text-brand hover:bg-brand-subtle"
           >
-            Vote on CSPR.fans
+            Vote on BOT.fans
           </Link>
         </Container>
       </div>

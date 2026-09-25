@@ -33,8 +33,8 @@ export default function DocsTrustModel() {
         Other trust facts, stated plainly: the eligibility claims are signed by a{" "}
         <strong>demo issuer key</strong> (no external KYC provider); the officer role is a{" "}
         <strong>single demo key</strong>, not a multisig; the Groth16 trusted setup is a{" "}
-        <strong>single-contribution dev ceremony</strong> (demo-grade); the Odra contract packages
-        are installed <strong>locked</strong> (non-upgradable) while the CEP-78 NFT package remains
+        <strong>single-contribution dev ceremony</strong> (demo-grade); the Solidity contract packages
+        are installed <strong>locked</strong> (non-upgradable) while the ERC-721 NFT package remains
         upgradable by the installer key.
       </p>
       <Callout title="Security in one line">

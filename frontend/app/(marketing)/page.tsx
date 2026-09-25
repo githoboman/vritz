@@ -12,7 +12,7 @@ const STEPS = [
   {
     n: "02",
     title: "Gated on-chain",
-    body: "A signed credential lands on-chain. Every transfer is checked by a recipient-aware CEP-78 filter and denied by default.",
+    body: "A signed credential lands on-chain. Every transfer is checked by a recipient-aware ERC-721 filter and denied by default.",
   },
   {
     n: "03",
@@ -48,7 +48,7 @@ const COMPARE = [
   {
     point: "Enforcement",
     usual: "Off-chain checks and trust",
-    Vritz: "Real on-chain CEP-78 transfer filter, denied by default",
+    Vritz: "Real on-chain ERC-721 transfer filter, denied by default",
   },
 ];
 

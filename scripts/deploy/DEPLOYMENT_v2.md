@@ -2,17 +2,17 @@
 
 # Writ — live testnet deployment manifest
 
-Network: **casper-test** · node `https://node.testnet.casper.network/rpc` · explorer https://testnet.cspr.live
+Network: **botchain-test** · node `https://node.testnet.botchain.network/rpc` · explorer https://testnet.cspr.live
 Deployer: `account-hash-f4a01d6b72731c6885e3b4ccdd535a5927b7dec344ed9ebb2b3f705b291a433a`
 Installed via `scripts/deploy/deploy_live.py` (put-deploy). One registry, canonical set.
 
 ## Funding
 | what | from | tx |
 | --- | --- | --- |
-| +4,000 CSPR top-up | `account-hash-50f4e6e8…1058bf6` | `d02be5426e88cd41b613ae52ac755b8636ae4b27d1e3f03804eaa74e5005b459` |
+| +4,000 BOT top-up | `account-hash-50f4e6e8…1058bf6` | `d02be5426e88cd41b613ae52ac755b8636ae4b27d1e3f03804eaa74e5005b459` |
 
 ## Canonical contract set (all SUCCESS)
-| contract | package hash | contract hash | install tx | consumed (CSPR) |
+| contract | package hash | contract hash | install tx | consumed (BOT) |
 | --- | --- | --- | --- | --- |
 | groth16-verifier | `hash-62039f4b…711b98` | `hash-d11979c5…931ce0` | `3bca3382b4d56fbb48fcf65cde609d93c0196b79dc1dca5f6d15487aadfa4b43` | 563.9 |
 | credential-registry | `hash-75e453a0…45a526` | `hash-d41c37c2…442049` | `f3829a440a2db280ffdd3feb6163037f3a8497a765dcf4338e059a2bd6d3f691` | 376.6 |
@@ -22,7 +22,7 @@ Installed via `scripts/deploy/deploy_live.py` (put-deploy). One registry, canoni
 | writ-token | `hash-162f6ef3…758c76` | `hash-ceb42200…e330bf` | `4c77a2dd99887f843477e087dd3cbfe05ae85c63bf3653a42d7f9fadf4934186` | 225.7 |
 
 Registry: quorum = q1/q2/q3, threshold 2-of-3, window 0, officer = deployer.
-CEP-78: collection `writ-rwa-bond-live`, transfer_filter_contract → transfer-filter contract hash.
+ERC-721: collection `writ-rwa-bond-live`, transfer_filter_contract → transfer-filter contract hash.
 
 ## Wiring (all SUCCESS)
 | call | tx |
@@ -30,7 +30,7 @@ CEP-78: collection `writ-rwa-bond-live`, transfer_filter_contract → transfer-f
 | registry.grant_challenge(challenge) | `16498fb0084136942aaf888a11e5f8e8502e1fd6b26d890e798a8834943d5211` |
 | registry.grant_officer(deployer) | `1d033d76bf61de17a0c6b60dc11fc927045dd3ce439a8d56e7f46f96088e9437` |
 
-Net install+wire spend: **2,375.3 CSPR**. Gas tracks the EE/June-22 numbers (verifier 564, registry 377, filter 226, cep78 557).
+Net install+wire spend: **2,375.3 BOT**. Gas tracks the EE/June-22 numbers (verifier 564, registry 377, filter 226, cep78 557).
 
 ## Live lifecycle proven on this fresh registry (real on-chain calls)
 Regulated holder **R** = `account-hash-85d28e05…002697b`, attested with the REAL circuit
@@ -59,10 +59,10 @@ commitment (byte-for-byte), tamper → false; verdict carries live status + trai
 ## Not reproduced on the fresh registry
 (historical note — both items below were addressed/scoped in the Phase A/B follow-up.)
 
-## PHASE A — CEP-78 NFT gating reconstructed + proven LIVE on the fresh registry
+## PHASE A — ERC-721 NFT gating reconstructed + proven LIVE on the fresh registry
 The repo `transfer-filter` (e14ed6ae) is a writ-token adapter (`is_transfer_allowed`/`is_active`),
-NOT the CEP-78 filter (which calls `can_transfer`+`mint_allowed`). Reconstructed a registry-backed
-filter and re-wired CEP-78:
+NOT the ERC-721 filter (which calls `can_transfer`+`mint_allowed`). Reconstructed a registry-backed
+filter and re-wired ERC-721:
 
 | component | hash | install tx |
 | --- | --- | --- |
@@ -86,10 +86,10 @@ Gated matrix LIVE (13/13), tx per case (DENY = the NFT op REVERTS, filter error 
 Holders staged with REAL circuit proofs (R commitment `15035…`, F `15952…`). Install gas 88.2 (filter)
 / 560.6 (cep78), filtered-transfer ~1.3 consumed — tracks the live-proven numbers.
 
-## PHASE B — real economic fraud slash: BLOCKED by put-deploy × odra-payable on Casper 2.0
-`challenge.bond` and `challenge.challenge` are odra `#[payable]`. odra funds the attached CSPR by
-having a session transfer it from the caller's main purse into a cargo purse. On Casper 2.0 a
-**put-deploy session cannot transfer from the main purse** — even a 1-CSPR transfer reverts with
+## PHASE B — real economic fraud slash: BLOCKED by put-deploy × odra-payable on BOT Chain 2.0
+`challenge.bond` and `challenge.challenge` are odra `#[payable]`. odra funds the attached BOT by
+having a session transfer it from the caller's main purse into a cargo purse. On BOT Chain 2.0 a
+**put-deploy session cannot transfer from the main purse** — even a 1-BOT transfer reverts with
 mint error 21 (`UnapprovedSpendingAmount`); the legacy-Deploy session spending limit is effectively
 zero. Proven via a minimal diagnostic (`11448abc…`). odra's own livenet path uses **put-transaction**
 (which violates "put-deploy only") and was additionally rejected by the node for "invalid pricing

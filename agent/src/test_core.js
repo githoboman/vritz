@@ -16,8 +16,8 @@ const sk = ed25519.utils.randomPrivateKey();
 const pk = ed25519.getPublicKey(sk);
 const pubHex = "01" + hex(pk);
 const jsHash = hex(blake2b(Buffer.concat([Buffer.from("ed25519"), Buffer.from([0]), Buffer.from(pk)]), { dkLen: 32 }));
-const cc = execFileSync("casper-client", ["account-address", "--public-key", pubHex], { encoding: "utf8" }).trim();
-console.log("account-hash match (JS vs casper-client):", "account-hash-" + jsHash === cc);
+const cc = execFileSync("botchain-client", ["account-address", "--public-key", pubHex], { encoding: "utf8" }).trim();
+console.log("account-hash match (JS vs botchain-client):", "account-hash-" + jsHash === cc);
 
 const msg = A.accountBindMessage("11".repeat(32), "22".repeat(32));
 const sig = hex(ed25519.sign(msg, sk));

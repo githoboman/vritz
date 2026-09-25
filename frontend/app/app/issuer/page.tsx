@@ -12,9 +12,9 @@ const cep78Short = `${CONTRACTS.cep78.contract.slice(0, 10)}…${CONTRACTS.cep78
 const NO_CURATION = { hiddenJunkEvents: 0, hiddenRevertedEvents: 0, hiddenPendingHolders: 0 };
 
 async function getView() {
-  const key = process.env.CSPR_CLOUD_KEY;
+  const key = process.env.BOT_CLOUD_KEY;
   if (!key) {
-    return { error: "CSPR_CLOUD_KEY not set in frontend/.env.local", roster: [], trail: [], curation: NO_CURATION };
+    return { error: "BOT_CLOUD_KEY not set in frontend/.env.local", roster: [], trail: [], curation: NO_CURATION };
   }
   try {
     const v = await fetchRegistryView(key);
@@ -37,7 +37,7 @@ export default async function IssuerDashboard() {
         actions={
           <span className="inline-flex items-center gap-2 rounded-full border border-active/20 bg-active-subtle px-3 py-1.5 text-xs font-medium text-active">
             <span aria-hidden className="h-1.5 w-1.5 animate-pulse rounded-full bg-active" />
-            Live · CSPR.cloud
+            Live · BOT.cloud
           </span>
         }
       />
@@ -51,7 +51,7 @@ export default async function IssuerDashboard() {
       {/* Asset overview */}
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile label="Asset (demo)" value="Vritz-rwa-bond-v4" sub={ASSET_ID} />
-        <StatTile label="Standard" value="Real CEP-78" sub="recipient-aware filter" />
+        <StatTile label="Standard" value="Real ERC-721" sub="recipient-aware filter" />
         <StatTile label="Credentialed" value={String(roster.length)} sub="live holders" />
         <StatTile label="NFT contract" value={cep78Short} sub="testnet.cspr.live" mono href={deployUrl(CONTRACTS.cep78.pkg)} />
       </section>

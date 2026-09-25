@@ -18,7 +18,7 @@ const COLUMNS = [
     links: [
       { label: "Docs", href: "/docs" },
       { label: "GitHub", href: SITE.github, external: true },
-      { label: "CSPR.fans", href: SITE.csprFans, external: true },
+      { label: "BOT.fans", href: SITE.csprFans, external: true },
     ],
   },
 ] as const;

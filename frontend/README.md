@@ -53,5 +53,5 @@ components.
 ## Notes
 
 - The dashboards run on **typed mocks** (`lib/mocks.ts`) for scaffolding during parallel dev. Privacy-by-design: holders are shown as pseudonymous nullifiers, never PII. The shipped demo runs on real on-chain data.
-- Wallet connection in `/app` is **simulated** for the walkthrough (persisted in `sessionStorage`); wire CSPR.click when the SDK lands.
+- Wallet connection in `/app` is **simulated** for the walkthrough (persisted in `sessionStorage`); wire BOT.click when the SDK lands.
 - Light-first by decision; dark mode deferred.

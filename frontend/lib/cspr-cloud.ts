@@ -1,6 +1,6 @@
 /*
-  CSPR.cloud reader — SERVER-SIDE ONLY. The API key is read from the environment by
-  the caller (the /api/registry route) and never reaches the browser. CSPR.cloud's
+  BOT.cloud reader — SERVER-SIDE ONLY. The API key is read from the environment by
+  the caller (the /api/registry route) and never reaches the browser. BOT.cloud's
   CES-event endpoints are not indexed for this contract, so the live attribution
   trail + roster are derived from the deploys (top-level entrypoint calls) of the v4
   registry and challenge contracts.
@@ -81,7 +81,7 @@ export type RegistryView = {
 
 async function cloud(path: string, key: string): Promise<{ data?: unknown[]; item_count?: number }> {
   const res = await fetch(`${BASE}${path}`, { headers: { Authorization: key }, cache: "no-store" });
-  if (!res.ok) throw new Error(`CSPR.cloud ${path} -> ${res.status}`);
+  if (!res.ok) throw new Error(`BOT.cloud ${path} -> ${res.status}`);
   return (await res.json()) as { data?: unknown[]; item_count?: number };
 }
 
@@ -147,7 +147,7 @@ function statusFor(events: TrailEvent[]): RosterRow["status"] {
   return status;
 }
 
-/** Fetch the live registry view (roster + attribution trail) from CSPR.cloud. */
+/** Fetch the live registry view (roster + attribution trail) from BOT.cloud. */
 export async function fetchRegistryView(key: string): Promise<RegistryView> {
   const regHash = CONTRACTS.registry.contract.replace(/^hash-/, "");
   const regPkg = CONTRACTS.registry.pkg.replace(/^hash-/, "");

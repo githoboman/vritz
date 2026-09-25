@@ -12,7 +12,7 @@ stated, production roadmap). Every entry lists the evidence a reviewer can run.
 | challenge `cargo test` | 18 pass | 18 pass |
 | groth16-verifier `cargo test` | 3 pass | **8 pass** (5 new adversarial deser tests) |
 | transfer-filter / writ-token | 0 tests (delegation-only crates) | covered by the new fork E2E |
-| CEP-78 fork `cargo test -p tests --lib writ` | 2 (test-double filter only) | **3** incl. `writ_registry_filter_e2e` (real registry on the real EE) |
+| ERC-721 fork `cargo test -p tests --lib writ` | 2 (test-double filter only) | **3** incl. `writ_registry_filter_e2e` (real registry on the real EE) |
 | integration `cargo test` | 1 pass | 1 pass |
 | frontend | no test infra; typecheck ok; lint 1 error | **28 tests pass**; typecheck ok; **lint 0 errors**; build ok |
 | disclosure `npm test` | 14 pass | 14 pass |
@@ -38,20 +38,20 @@ stated, production roadmap). Every entry lists the evidence a reviewer can run.
 - **Tests:** `frontend/tests/proof-serde.test.ts` — conversion is byte-identical to the Rust `gen_fixtures` output for the same proof JSON; round-trip; malformed proofs rejected; regression tripwire (no `placeholderProofBytes`, no `proof.bin` in the route). `identity-e2e` proves a fresh holder proof serializes for storage. On-chain, `challenge.resolve` reads only stored bytes (existing challenge tests), so an honest holder's credential resolves VALID.
 - **Note:** credentials attested by the OLD frontend build carry the mismatched placeholder — those demo credentials are challengeable-by-design history on testnet; the code path no longer exists.
 
-### F-4 — OFAC screening screened the wrong identifier — **fixed (honest hybrid: Option A for linked ETH + Option B labeling for Casper)**
-- **Was:** first 40 hex chars of a Casper account hash checked against an ETH-address SDN list — could never fire.
-- **Fix:** `frontend/lib/server/screen.ts` v2 — live OFAC SDN ETH list fetched with source URL, timestamp, content SHA-256, entry count; screened against an optional **linked ETH address** (an identifier that can actually match; UI field added); Casper-account matching via env-configured **demo denylist, labeled illustrative** in UI + docs; stale (>24 h) or unavailable data throws and blocks attestation (fail-closed).
+### F-4 — OFAC screening screened the wrong identifier — **fixed (honest hybrid: Option A for linked ETH + Option B labeling for BOT Chain)**
+- **Was:** first 40 hex chars of a BOT Chain account hash checked against an ETH-address SDN list — could never fire.
+- **Fix:** `frontend/lib/server/screen.ts` v2 — live OFAC SDN ETH list fetched with source URL, timestamp, content SHA-256, entry count; screened against an optional **linked ETH address** (an identifier that can actually match; UI field added); BOT Chain-account matching via env-configured **demo denylist, labeled illustrative** in UI + docs; stale (>24 h) or unavailable data throws and blocks attestation (fail-closed).
 - **Tests:** `frontend/tests/screen.test.ts` — sanctioned linked ETH denied; clean passes; demo-denylist hit denied + labeled; malformed address rejected; unavailable and stale-data cases refuse attestation; degraded fresh-cache path works.
 - **Docs/UI:** every "live OFAC screen" claim rewritten to the honest scope (README §3, SECURITY.md, ARCHITECTURE.md §5, issuer dashboard, investor flow, /docs pages). On-chain revokes are attributed to the registry sanctions path, never to automatic OFAC detection.
 
 ### F-5 — Anyone could activate any account — **fixed**
 - **Was:** `/api/claims` returned a full witness for any posted account; bind check best-effort and non-blocking; nonce-less replayable message.
-- **Fix:** new `/api/bind` issues a single-use 10-min nonce; the signed message binds chain, registry package, asset, account, nonce, expiry (`frontend/lib/server/bind.ts`); `verifyBindStrict` is **blocking** on both `/api/claims` and `/api/onboard`, requires the public key to hash to the claimed account, verifies ed25519 and secp256k1 Casper-message signatures, and consumes the nonce at onboard (replay rejected). Client flow requires both signatures; cancellation aborts onboarding.
+- **Fix:** new `/api/bind` issues a single-use 10-min nonce; the signed message binds chain, registry package, asset, account, nonce, expiry (`frontend/lib/server/bind.ts`); `verifyBindStrict` is **blocking** on both `/api/claims` and `/api/onboard`, requires the public key to hash to the claimed account, verifies ed25519 and secp256k1 BOT Chain-message signatures, and consumes the nonce at onboard (replay rejected). Client flow requires both signatures; cancellation aborts onboarding.
 - **Tests:** `frontend/tests/bind.test.ts` — attacker key for victim account fails (`key-does-not-own-account`); replay fails; expiry fails; tampered domain/asset fails; wrong-account nonce fails; unknown nonce fails; valid control passes.
 
 ### F-6 — Slash/treasury tx contradiction — **fixed (verified on-chain)**
 - **Was:** README claimed a live fraud slash while `DEPLOYMENT.md` said the payable path was blocked; "burn" named a spendable transfer.
-- **Fix:** deploy `0ae7aecd…` verified by direct node RPC: SUCCESS at block 8321548 on the canonical V4 challenge package `c1080d67…` (`resolve`, ~80.37 CSPR consumed; 640 CSPR → challenger, **110 CSPR → treasury account `50f4e6e8…`, a spendable account**). `scripts/deploy/DEPLOYMENT.md` rewritten as the canonical V4 manifest (all install/wiring txs from `manifest_v4.json`, the payable cargo-purse workaround, upgrade-authority disclosure); old manifests archived with banners. **"burn" renamed to "treasury transfer" in every doc, UI string, and demo line**; the unspendable-sink option is stated as roadmap.
+- **Fix:** deploy `0ae7aecd…` verified by direct node RPC: SUCCESS at block 8321548 on the canonical V4 challenge package `c1080d67…` (`resolve`, ~80.37 BOT consumed; 640 BOT → challenger, **110 BOT → treasury account `50f4e6e8…`, a spendable account**). `scripts/deploy/DEPLOYMENT.md` rewritten as the canonical V4 manifest (all install/wiring txs from `manifest_v4.json`, the payable cargo-purse workaround, upgrade-authority disclosure); old manifests archived with banners. **"burn" renamed to "treasury transfer" in every doc, UI string, and demo line**; the unspendable-sink option is stated as roadmap.
 - **Evidence:** `scripts/verify_live.sh` — 15/15 PASS, including explicit checks that the slash tx paid 640 to the challenger and 110 to the treasury.
 
 ## Major findings
@@ -69,14 +69,14 @@ stated, production roadmap). Every entry lists the evidence a reviewer can run.
 - Burn → treasury transfer everywhere (see F-6). Officer: deployed officer is a single demo key — every "officer multisig"/"2-of-3 multisig" claim rewritten (ARCHITECTURE roles table + §5, issuer dashboard "Demo UI — buttons not wired", FRONTEND.md, PRD status note); `scripts/officer_multisig/` retained as the documented native mechanism for production.
 
 ### M-4 — Mock issuer telemetry — **fixed**
-- `lib/mocks.ts` deleted (dead HOLDERS/AUDIT_TRAIL/ASSET/RULE_SET/RE_SCREEN removed). Issuer dashboard now shows real config (circuit predicate, on-chain expiry enforcement, honest attestation model, screening scope with "no scheduled sweep") — no fabricated "3/3 online"/"last sweep"/flag counts. Landing terminal: fake block height removed, "LIVE" badge → "SCRIPTED DEMO", all copy says scripted replay, real tx links referenced. Roster/trail stay live via CSPR.cloud with **curation counts disclosed in the UI** (`cspr-cloud.ts` returns hidden-row counts; "nothing is fabricated or mocked" claim removed). Proving-step copy moved to `lib/proving-steps.ts`, matching the implemented flow.
+- `lib/mocks.ts` deleted (dead HOLDERS/AUDIT_TRAIL/ASSET/RULE_SET/RE_SCREEN removed). Issuer dashboard now shows real config (circuit predicate, on-chain expiry enforcement, honest attestation model, screening scope with "no scheduled sweep") — no fabricated "3/3 online"/"last sweep"/flag counts. Landing terminal: fake block height removed, "LIVE" badge → "SCRIPTED DEMO", all copy says scripted replay, real tx links referenced. Roster/trail stay live via BOT.cloud with **curation counts disclosed in the UI** (`cspr-cloud.ts` returns hidden-row counts; "nothing is fabricated or mocked" claim removed). Proving-step copy moved to `lib/proving-steps.ts`, matching the implemented flow.
 
-### M-5 — Shipping CEP-78 registry filter untested; README pointed at the wrong filter — **fixed**
-- New `contracts/writ-cep78/fork/tests/src/writ_registry_smoke.rs` (`writ_registry_filter_e2e`) wires the patched CEP-78 → production `writ_registry_filter` → the **real prebuilt `CredentialRegistry.wasm`** on the Casper EE, with real ed25519 quorum signatures over the byte-exact canonical message. Covers: eligible/ineligible mint, eligible/ineligible-recipient transfer, revoked-sender revert, expired-credential revert (block-time advance), missing-registry fail-closed (reverts, zero tokens), and operator/approval no-bypass (incl. an ordering proof that the filter fires before the auth check). Ownership asserted unchanged after every denial. `make setup-test` now builds/copies the needed wasm; `CredentialRegistry.wasm` committed as the exact deployed artifact.
-- README contract table now names `writ_registry_filter` (pkg `d84a9321`) as the CEP-78 hook and lists the Odra `transfer-filter` (pkg `406e90f7`) separately; ADVERSARIAL_TESTING table fixed likewise.
+### M-5 — Shipping ERC-721 registry filter untested; README pointed at the wrong filter — **fixed**
+- New `contracts/writ-cep78/fork/tests/src/writ_registry_smoke.rs` (`writ_registry_filter_e2e`) wires the patched ERC-721 → production `writ_registry_filter` → the **real prebuilt `CredentialRegistry.wasm`** on the BOT Chain EE, with real ed25519 quorum signatures over the byte-exact canonical message. Covers: eligible/ineligible mint, eligible/ineligible-recipient transfer, revoked-sender revert, expired-credential revert (block-time advance), missing-registry fail-closed (reverts, zero tokens), and operator/approval no-bypass (incl. an ordering proof that the filter fires before the auth check). Ownership asserted unchanged after every denial. `make setup-test` now builds/copies the needed wasm; `CredentialRegistry.wasm` committed as the exact deployed artifact.
+- README contract table now names `writ_registry_filter` (pkg `d84a9321`) as the ERC-721 hook and lists the Solidity `transfer-filter` (pkg `406e90f7`) separately; ADVERSARIAL_TESTING table fixed likewise.
 
 ### M-6 — Token package upgradable by one key — **disclosed (partially structural)**
-- Odra packages verified installed with `odra_cfg_is_upgradable: false` (locked — including registry, challenge, verifier, filters). The CEP-78 NFT package IS upgradable by the installer key: disclosed in DEPLOYMENT.md, README §9, /docs pages; the compliance logic it calls is locked, so enforcement cannot be silently removed without the stated key; lock/multisig-URef is roadmap. (Redeploying a locked CEP-78 before the deadline would invalidate the live proof txs; the disclosure path was chosen.)
+- Solidity packages verified installed with `odra_cfg_is_upgradable: false` (locked — including registry, challenge, verifier, filters). The ERC-721 NFT package IS upgradable by the installer key: disclosed in DEPLOYMENT.md, README §9, /docs pages; the compliance logic it calls is locked, so enforcement cannot be silently removed without the stated key; lock/multisig-URef is roadmap. (Redeploying a locked ERC-721 before the deadline would invalidate the live proof txs; the disclosure path was chosen.)
 
 ### M-7 — Single-contribution trusted setup — **honestly downgraded**
 - `circuits/README.md` now labels the ceremony demo-grade in full (toxic-waste holder could forge; no transcript; the shipped frontend artifacts and the embedded on-chain VK derive from it; multi-party ceremony required for production). Frontend `prove.ts` and /docs/whats-real repeat the caveat.
@@ -89,7 +89,7 @@ stated, production roadmap). Every entry lists the evidence a reviewer can run.
 - Deployed instance predates this (locked package) — README §12.2 discloses it with the risk assessment.
 
 ### M-10 — Provenance risk (hardcoded paths, leftovers) — **fixed**
-- All `/Users/mac/...` paths removed: deploy scripts use `REPO_ROOT` from `__file__` (+ `DEPLOY_KEY` env override); agent code derives the repo root from `import.meta.url` with `ARK_VERIFY`/`WRIT_SIGNER`/`WRIT_KEYS_DIR` env overrides. All scripts syntax-checked; agent module import-checked. Dated, RPC-verifiable testnet timestamps are recorded in DEPLOYMENT.md (block heights + dates). CEP-78 fork attribution in `contracts/writ-cep78/NOTICE`.
+- All `/Users/mac/...` paths removed: deploy scripts use `REPO_ROOT` from `__file__` (+ `DEPLOY_KEY` env override); agent code derives the repo root from `import.meta.url` with `ARK_VERIFY`/`WRIT_SIGNER`/`WRIT_KEYS_DIR` env overrides. All scripts syntax-checked; agent module import-checked. Dated, RPC-verifiable testnet timestamps are recorded in DEPLOYMENT.md (block heights + dates). ERC-721 fork attribution in `contracts/writ-cep78/NOTICE`.
 - Remaining `/tmp/...` defaults are documented conventions, env-overridable.
 
 ### M-11 — Licensing conflict — **fixed**
@@ -158,15 +158,15 @@ pass: `submitAttest` now polls `info_get_deploy` and the route returns
 runs only on confirmed success.
 
 Restoring live self-onboarding requires testnet faucet funds: re-bond the two
-signers (2 × 250 CSPR via `payable_via_cargo.py`) and re-fund the coordinator
+signers (2 × 250 BOT via `payable_via_cargo.py`) and re-fund the coordinator
 (the full attest payment cap is charged on testnet; cap is env-tunable via
 `ATTEST_PAYMENT_MOTES`). A funded V5 redeploy (`scripts/deploy/deploy_v5.py`,
-~2,500 CSPR, balance-preflight-gated) would additionally activate on-chain
+~2,500 BOT, balance-preflight-gated) would additionally activate on-chain
 canonical-input pinning and the checked-deserialization verifier.
 
 ## V5 hardened redeploy — the closing pass (funded)
 
-With the deployer funded (5,000 CSPR testnet), the two findings that were
+With the deployer funded (5,000 BOT testnet), the two findings that were
 previously "fixed in code, not on the deployed instance" were closed **on-chain**,
 and the entire demo was regenerated against the new set. Manifest:
 [scripts/deploy/DEPLOYMENT.md](../scripts/deploy/DEPLOYMENT.md); every hash is
@@ -180,20 +180,20 @@ re-checked by `./scripts/verify_live.sh` (**27/27 PASS**, no keys).
 | Fraud demo used a byte-tampered proof | fraud fixture is now holder X attested with **holder R's valid proof** — deserializes, fails the pairing |
 
 Live re-verification of the economics (README §8 claims vs observed balances):
-challenger +640 CSPR, **treasury 224.6 → 334.6 (+110, a transfer to a spendable
-account — not a burn)**, resolve consumed 95.1 CSPR for the on-chain pairing check.
+challenger +640 BOT, **treasury 224.6 → 334.6 (+110, a transfer to a spendable
+account — not a burn)**, resolve consumed 95.1 BOT for the on-chain pairing check.
 
 Two real bugs were found and fixed during this deployment, both now in the scripts:
 
 1. `grant_challenge` was granted to the challenge **contract** hash, so the
-   contract's cross-call to `registry.set_bonded` reverted — Odra addresses
+   contract's cross-call to `registry.set_bonded` reverted — Solidity addresses
    contracts by **package** hash. Bonding was impossible until re-granted
    ([`8cc68bdd`](https://testnet.cspr.live/deploy/8cc68bdd617efd7eb83cac6389c2caf98f38deead92be3942ef77a520520fff1)).
 2. The committed `CredentialRegistry.wasm` predated `set_canonical_inputs`
    ("No such method"), so both the registry and the verifier were rebuilt from
    source before deploying. Committed wasms are now the hardened builds.
 
-An honest note on one demo beat: the first kicker attempt reverted with CEP-78
+An honest note on one demo beat: the first kicker attempt reverted with ERC-721
 error **6 (InvalidTokenOwner)** — an earlier run had already moved the token, so
 the sender no longer owned it. That is an ownership failure, not a compliance
 failure, so the beat was re-staged on a holder that did own the token; it now
@@ -218,4 +218,4 @@ rejects attests from slashed signers, so a success is proof of bond state).
 4. On-chain attest binds pi[0..64]; issuer/asset/root binding is service-layer + challenge-time.
 5. In-memory nonce/rate-limit stores (single replica).
 6. Treasury is spendable (transfer, not burn).
-7. CEP-78 NFT package upgradable by installer key (logic it calls is locked).
+7. ERC-721 NFT package upgradable by installer key (logic it calls is locked).

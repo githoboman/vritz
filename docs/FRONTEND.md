@@ -6,7 +6,7 @@
 
 ## 0. What we're building
 
-Writ sells **trust to institutions** while also needing **CSPR.fans virality** (the hackathon's community-vote path runs through a Telegram mini-app — much of the audience views on mobile). So the build has two jobs at once: read *credible and regulatory-grade* to a CCO, and *shareable and instantly legible* to a voter scrolling on a phone. Every decision serves both.
+Writ sells **trust to institutions** while also needing **BOT.fans virality** (the hackathon's community-vote path runs through a Telegram mini-app — much of the audience views on mobile). So the build has two jobs at once: read *credible and regulatory-grade* to a CCO, and *shareable and instantly legible* to a voter scrolling on a phone. Every decision serves both.
 
 Surfaces:
 - **Landing** (`/`) — marketing, the conversion + virality surface.
@@ -41,7 +41,7 @@ sitemap.ts, robots.ts, not-found.tsx, loading.tsx, error.tsx
 
 Each section: its job, content, the beat. **The hero must land the value in one breath; the demo moment is the conversion beat.**
 
-1. **Nav (sticky, minimal).** Writ wordmark · Docs · GitHub · **Launch app** (primary). During the vote window, a **Vote on CSPR.fans** chip. Mobile: collapse to wordmark + Launch.
+1. **Nav (sticky, minimal).** Writ wordmark · Docs · GitHub · **Launch app** (primary). During the vote window, a **Vote on BOT.fans** chip. Mobile: collapse to wordmark + Launch.
 
 2. **Hero.** The one line — *"Keep your tokenized asset compliant for life — every holder provably eligible, screened against live sanctions data, blocked on-chain the moment their credential is revoked. Your firm never custodies investor PII."* One sharp sub-line. Primary CTA (**See it block a transfer** → demo) + secondary (**Launch app**). Visual: the clean "transfer DENIED on-chain" moment or a restrained product shot. No wall of text — this section is the whole pitch in 5 seconds.
 
@@ -57,11 +57,11 @@ Each section: its job, content, the beat. **The hero must land the value in one 
 
 8. **Who it's for (horizontal).** RWA verticals — tokenized equities, treasuries, corporate debt, real estate, funds. One compliance layer, every vertical. Logos/icons row.
 
-9. **How the ZK works (the honest, credible section).** The precise claim for technical judges + institutional buyers: *"Eligibility proven in zero-knowledge, verified by a threshold of autonomous agents; the chain stores signed credentials, enforces compliance at every transfer via a native CEP-78 filter, and exposes published proofs for on-chain fraud challenge."* Never imply on-chain SNARK verification. Honesty reads as senior.
+9. **How the ZK works (the honest, credible section).** The precise claim for technical judges + institutional buyers: *"Eligibility proven in zero-knowledge, verified by a threshold of autonomous agents; the chain stores signed credentials, enforces compliance at every transfer via a native ERC-721 filter, and exposes published proofs for on-chain fraud challenge."* Never imply on-chain SNARK verification. Honesty reads as senior.
 
-10. **Built on Casper.** Ecosystem alignment — the ERC-3643-equivalent for Casper, native account model, dead-center on Casper's RWA + compliant-privacy thesis. (Scores the Casper judges.)
+10. **Built on BOT Chain.** Ecosystem alignment — the ERC-3643-equivalent for BOT Chain, native account model, dead-center on BOT Chain's RWA + compliant-privacy thesis. (Scores the BOT Chain judges.)
 
-11. **CTA + footer.** Launch app · Docs · GitHub · socials · CSPR.fans. Repeat the one-liner.
+11. **CTA + footer.** Launch app · Docs · GitHub · socials · BOT.fans. Repeat the one-liner.
 
 ---
 
@@ -82,7 +82,7 @@ The control room. **Privacy-by-design display: never render investor PII — onl
 
 Minimal, trustworthy, **privacy-forward** — the messaging hammers "you upload nothing."
 
-- **Connect wallet** (CSPR.click Web SDK).
+- **Connect wallet** (BOT.click Web SDK).
 - **Prove eligibility** — step UX: derive wallet-held identity secret → demo issuer signs the claim set → generate ZK proof client-side → submit proof for verification + attestation → watch credential status. Clear "your identity secret and witness stay in this browser" reassurance at each step.
 - **Credential status** — Active / expiry countdown / re-prove action.
 
@@ -99,7 +99,7 @@ Auditor-grade, sparse, verification-focused.
 
 ## 7. OG image — `/api/og`
 
-Dynamic (`next/og` / `ImageResponse`, edge runtime). Default: Writ wordmark + the one-liner on the design-token background. Built for CSPR.fans/social shareability — must look sharp at small sizes. Optional per-route variants (landing default is enough for v1).
+Dynamic (`next/og` / `ImageResponse`, edge runtime). Default: Writ wordmark + the one-liner on the design-token background. Built for BOT.fans/social shareability — must look sharp at small sizes. Optional per-route variants (landing default is enough for v1).
 
 ---
 
@@ -116,9 +116,9 @@ Mintlify-standard (the house convention). Sections: Quickstart, Architecture (th
 - **Performance** — `next/image`, `next/font`, lazy-load the demo media, target a clean Lighthouse pass. The landing must be fast on mobile.
 - **Accessibility** — semantic HTML, keyboard nav, focus states, contrast (a11y *is* institutional credibility).
 - **SEO** — `sitemap.ts`, `robots.ts`, structured metadata.
-- **Responsive, mobile-first** — CSPR.fans voters are on phones; the landing and demo must be flawless on mobile before desktop polish.
+- **Responsive, mobile-first** — BOT.fans voters are on phones; the landing and demo must be flawless on mobile before desktop polish.
 - **States** — `loading.tsx` / `error.tsx` / `not-found.tsx` per segment; skeletons over spinners on the dashboards.
-- **Wallet** — CSPR.click Web SDK; never expose secrets client-side; all chain reads via CSPR.cloud.
+- **Wallet** — BOT.click Web SDK; never expose secrets client-side; all chain reads via BOT.cloud.
 - **Deploy** — Vercel or Railway (house default); clean env handling; preview deploys for Anu's PRs.
 
 ---
