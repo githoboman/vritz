@@ -1,7 +1,7 @@
 import { Contract, BrowserProvider, TransactionRequest, Signer } from "ethers";
 import { ASSET_ID } from "./chain";
 
-export const WRIT_TOKEN_ADDRESS = "0x2b95728f452094b9B5cc78f2747617DB4370f00C"; 
+export const WRIT_TOKEN_ADDRESS = process.env.NEXT_PUBLIC_WRIT_TOKEN_ADDRESS || "0x2b95728f452094b9B5cc78f2747617DB4370f00C"; 
 
 const WRIT_TOKEN_ABI = [
   "function transfer(address to, uint256 amount) external returns (bool)",
