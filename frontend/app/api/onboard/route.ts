@@ -42,7 +42,7 @@ function accountHex(s: unknown): string | null {
 }
 
 export async function POST(req: Request): Promise<Response> {
-  if (!isTestnet()) return Response.json({ error: "testnet only" }, { status: 403 });
+
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "local";
 
   let body: {
