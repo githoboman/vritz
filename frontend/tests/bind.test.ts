@@ -6,22 +6,19 @@
 */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ed25519 } from "@noble/curves/ed25519";
+import { ethers } from "ethers";
 import {
   issueBindNonce,
   verifyBindStrict,
-  publicKeyToAccountHash,
   _resetBindStore,
 } from "@/lib/server/bind";
 
 function wallet() {
-  const seed = ed25519.utils.randomPrivateKey();
-  const pub = Buffer.from(ed25519.getPublicKey(seed)).toString("hex");
-  const publicKey = "01" + pub;
-  const account = publicKeyToAccountHash(publicKey);
+  const w = ethers.Wallet.createRandom();
+  const account = w.address;
+  const publicKey = w.publicKey;
   const sign = (message: string): string => {
-    const bytes = new TextEncoder().encode(`EVM Message:\n${message}`);
-    return "01" + Buffer.from(ed25519.sign(bytes, seed)).toString("hex");
+    return w.signMessageSync(message);
   };
   return { publicKey, account, sign };
 }
@@ -50,7 +47,7 @@ describe("wallet bind (blocking)", () => {
       signature: attacker.sign(message),
       consume: false,
     });
-    expect(res).toEqual({ ok: false, reason: "key-does-not-own-account" });
+    expect(res).toEqual({ ok: false, reason: "bad-signature" });
   });
 
   it("rejects a replayed (consumed) bind signature", () => {
