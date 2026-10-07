@@ -11,15 +11,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(): Promise<Response> {
-  const key = process.env.BOT_CLOUD_KEY;
-  if (!key) {
-    return Response.json(
-      { error: "BOT_CLOUD_KEY not configured (set it in frontend/.env.local)" },
-      { status: 503 },
-    );
-  }
   try {
-    const view = await fetchRegistryView(key);
+    const view = await fetchRegistryView("dummy");
     return Response.json(view, { headers: { "Cache-Control": "no-store" } });
   } catch (e) {
     return Response.json(

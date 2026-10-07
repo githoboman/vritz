@@ -12,12 +12,8 @@ const cep78Short = `${CONTRACTS.cep78.contract.slice(0, 10)}…${CONTRACTS.cep78
 const NO_CURATION = { hiddenJunkEvents: 0, hiddenRevertedEvents: 0, hiddenPendingHolders: 0 };
 
 async function getView() {
-  const key = process.env.BOT_CLOUD_KEY;
-  if (!key) {
-    return { error: "BOT_CLOUD_KEY not set in frontend/.env.local", roster: [], trail: [], curation: NO_CURATION };
-  }
   try {
-    const v = await fetchRegistryView(key);
+    const v = await fetchRegistryView("dummy");
     return { error: null as string | null, roster: v.roster, trail: v.trail, curation: v.curation };
   } catch (e) {
     return { error: e instanceof Error ? e.message : "live read failed", roster: [], trail: [], curation: NO_CURATION };
