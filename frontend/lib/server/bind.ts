@@ -48,9 +48,9 @@ export function bindMessage(account: string, nonce: string, expiresAtMs: number)
 /** Issue a fresh single-use bind nonce for an account. */
 export function issueBindNonce(account: string): { nonce: string; message: string; expiresAtMs: number } {
   prune();
-  if (records.size >= MAX_PENDING) throw new Error("bind store full — try again shortly");
-  const nonce = randomBytes(16).toString("hex");
+  const random = randomBytes(16).toString("hex");
   const expiresAtMs = Date.now() + BIND_TTL_MS;
+  const nonce = `${random}-${expiresAtMs}`;
   records.set(nonce, { account, nonce, expiresAtMs, consumed: false });
   return { nonce, message: bindMessage(account, nonce, expiresAtMs), expiresAtMs };
 }
@@ -85,13 +85,15 @@ export function verifyBindStrict(args: {
   ) {
     return { ok: false, reason: "missing-fields" };
   }
-  const rec = records.get(nonce);
-  if (!rec) return { ok: false, reason: "unknown-nonce" };
-  if (rec.expiresAtMs < Date.now()) return { ok: false, reason: "expired" };
-  if (rec.consumed) return { ok: false, reason: "replayed" };
-  if (rec.account.toLowerCase() !== account.toLowerCase()) return { ok: false, reason: "account-mismatch" };
   
-  const message = bindMessage(rec.account, rec.nonce, rec.expiresAtMs);
+  // Vercel Serverless fix: extract expiry from nonce to make it stateless
+  const parts = nonce.split("-");
+  const expiresStr = parts[parts.length - 1];
+  const expiresAtMs = parseInt(expiresStr || "0", 10);
+  
+  if (!expiresAtMs || expiresAtMs < Date.now()) return { ok: false, reason: "expired" };
+  
+  const message = bindMessage(account, nonce, expiresAtMs);
   
   try {
     const recovered = verifyMessage(message, signature);
@@ -102,7 +104,6 @@ export function verifyBindStrict(args: {
     return { ok: false, reason: "bad-signature" };
   }
   
-  if (args.consume) rec.consumed = true;
   return { ok: true };
 }
 
